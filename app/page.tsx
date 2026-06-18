@@ -104,7 +104,6 @@ export default function PrivacyPolicy() {
       </p>
     </main>
   );
-}>
-    </main>
-  );
 }
+
+
