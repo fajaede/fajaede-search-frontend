@@ -1,109 +1,62 @@
 import Link from "next/link";
 
-export default function PrivacyPolicy() {
+export default function Home() {
   return (
-    <main
-      style={{
-        maxWidth: 960,
-        margin: "0 auto",
-        padding: "48px 20px",
-        fontFamily: "system-ui, sans-serif",
-        lineHeight: 1.7,
-        color: "#334155",
-      }}
-    >
-      <Link href="/" style={{ color: "#0f172a", textDecoration: "none", fontWeight: 500, display: 'inline-block', marginBottom: '24px' }}>
-        &larr; Terug naar de zoekmachine
-      </Link>
-      <h1 style={{ fontSize: 32, margin: "0 0 12px", color: "#1e293b" }}>
-        Privacybeleid voor fajaede.eu
-      </h1>
-      <p style={{ color: "#64748b", marginTop: 0 }}>
-        <strong>Laatst bijgewerkt:</strong> 17 juni 2026
-      </p>
+    <main className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4">
+      <div className="w-full max-w-4xl flex flex-col items-center text-center">
+        {/* Logo / Header */}
+        <h1 className="text-6xl md:text-8xl font-extrabold text-slate-800 mb-6 tracking-tight">
+          fajaede<span className="text-orange-500">AI+</span>
+        </h1>
+        <p className="text-lg md:text-xl text-slate-600 mb-10 max-w-2xl font-medium">
+          De onafhankelijke Europese zoekmachine. Veilig, neutraal en zonder profilering of tracking het web doorzoeken.
+        </p>
 
-      <h2 style={{ fontSize: 24, marginTop: 40, color: "#1e293b", borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>1. Wie zijn wij?</h2>
-      <p>
-        fajaede.eu ("wij", "ons" of "onze") is een dienst van fajaedeAI+. Wij
-        respecteren uw privacy en zetten ons in om uw persoonlijke gegevens te
-        beschermen.
-      </p>
-      <p style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-        <strong>Verwerkingsverantwoordelijke:</strong>
-        <br />
-        fajaedeAI+
-        <br />
-        Lodewijk de Koninckstraat 31
-        <br />
-        2600 Berchem, Antwerpen
-        <br />
-        België
-        <br />
-        BE1032407424
-      </p>
+        {/* Zoekbalk */}
+        <form className="w-full max-w-3xl flex items-center bg-white rounded-full shadow-lg border border-slate-200 p-2 mb-16 focus-within:ring-2 focus-within:ring-orange-500 transition-all hover:shadow-xl">
+          <input
+            type="text"
+            name="q"
+            placeholder="Zoek met fajaedeAI+..."
+            className="w-full px-6 py-4 rounded-full focus:outline-none text-xl text-slate-700 bg-transparent"
+            required
+          />
+          <button
+            type="submit"
+            className="bg-slate-800 text-white px-10 py-4 rounded-full font-bold hover:bg-slate-700 transition-colors shadow-sm text-lg"
+          >
+            Zoeken
+          </button>
+        </form>
 
-      <h2 style={{ fontSize: 24, marginTop: 40, color: "#1e293b", borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
-        2. Welke gegevens verzamelen wij?
-      </h2>
-      <p>
-        Wanneer u onze zoekmachine gebruikt, kunnen wij de volgende informatie
-        verzamelen:
-      </p>
-      <ul>
-        <li>
-          <strong>Zoekopdrachten:</strong> De zoektermen die u invoert. Deze
-          worden anoniem verwerkt om zoekresultaten en AI-samenvattingen te
-          genereren.
-        </li>
-        <li>
-          <strong>Technische gegevens:</strong> Wij kunnen standaard serverlogs
-          bijhouden, die uw IP-adres, browsertype en het tijdstip van uw
-          zoekopdracht kunnen bevatten. Deze gegevens worden gebruikt voor
-          beveiliging en het opsporen van fouten.
-        </li>
-      </ul>
+        {/* Fajaede Intelligence Layer / Features */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl mb-12">
+          <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 flex flex-col items-center text-center hover:border-slate-300 transition-colors">
+            <div className="w-14 h-14 bg-slate-100 text-slate-600 rounded-full flex items-center justify-center mb-5 text-2xl">
+              🛡️
+            </div>
+            <h2 className="text-xl font-bold text-slate-800 mb-3">Privacy Eerst</h2>
+            <p className="text-slate-600 leading-relaxed">Geen tracking, geen opgeslagen profielen. Jouw data blijft van jou, beschermd onder strikte Europese wetgeving.</p>
+          </div>
+          <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 flex flex-col items-center text-center hover:border-slate-300 transition-colors">
+            <div className="w-14 h-14 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mb-5 text-2xl">
+              ✨
+            </div>
+            <h2 className="text-xl font-bold text-slate-800 mb-3">AI Generator</h2>
+            <p className="text-slate-600 leading-relaxed">Ontwerp direct complete HTML-websites met onze ingebouwde intelligente <span className="font-semibold">Fajaede Layer</span>.</p>
+          </div>
+        </div>
 
-      <h2 style={{ fontSize: 24, marginTop: 40, color: "#1e293b", borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
-        3. Waarom verzamelen wij deze gegevens?
-      </h2>
-      <p>Wij gebruiken uw gegevens voor de volgende doeleinden:</p>
-      <ul>
-        <li>
-          <strong>Het leveren van onze dienst:</strong> Om uw zoekopdrachten te
-          verwerken en relevante resultaten en AI-samenvattingen te tonen.
-        </li>
-        <li>
-          <strong>Beveiliging en onderhoud:</strong> Om onze systemen te
-          beveiligen en de technische prestaties te garanderen.
-        </li>
-      </ul>
-
-      <h2 style={{ fontSize: 24, marginTop: 40, color: "#1e293b", borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
-        4. Delen van gegevens met derden
-      </h2>
-      <p>
-        Voor het genereren van de &quot;Fajaede Intelligence Layer&quot; samenvattingen,
-        wordt uw zoekopdracht (zonder persoonlijke identificatie) doorgegeven
-        aan onze AI-serviceprovider (Ollama, lokaal draaiend). Wij delen verder
-        geen persoonlijke gegevens met derden, tenzij wettelijk verplicht.
-      </p>
-
-      <h2 style={{ fontSize: 24, marginTop: 40, color: "#1e293b", borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>5. Uw rechten</h2>
-      <p>
-        Onder de AVG heeft u recht op inzage, rectificatie, verwijdering en
-        beperking van de verwerking van uw persoonsgegevens. Omdat wij uw
-        zoekopdrachten anoniem verwerken, is het uitoefenen van deze rechten op
-        specifieke zoekdata niet direct mogelijk. Voor vragen over onze
-        serverlogs kunt u contact met ons opnemen.
-      </p>
-
-      <h2 style={{ fontSize: 24, marginTop: 40, color: "#1e293b", borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>6. Contact</h2>
-      <p>
-        Als u vragen heeft over dit privacybeleid, kunt u contact met ons
-        opnemen via de contactgegevens vermeld onder punt 1.
-      </p>
+        {/* Footer / Links */}
+        <div className="flex flex-wrap justify-center gap-8 text-sm text-slate-500 mt-8 font-semibold">
+          <Link href="/privacy-policy" className="hover:text-orange-600 transition-colors">
+            Privacybeleid
+          </Link>
+          <a href="#" className="hover:text-orange-600 transition-colors">
+            Website Generator
+          </a>
+        </div>
+      </div>
     </main>
   );
 }
-
-
