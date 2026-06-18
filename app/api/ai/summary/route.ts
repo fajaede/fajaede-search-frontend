@@ -7,7 +7,7 @@ const MEILI_INDEX = process.env.MEILI_INDEX || "pages";
 
 // Gebruik hier expliciet localhost, want we weten dat dat werkt
 const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434";
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "llama3";
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "phi3:mini";
 
 export async function POST(req: NextRequest) {
   try {
