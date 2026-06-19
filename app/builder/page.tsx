@@ -13,11 +13,9 @@ type BuilderResponse = {
 
 export default function BuilderPage() {
   const [siteType, setSiteType] = useState('general_business');
-  const [industry, setIndustry] = useState('IT-Consultancy');
-  const [style, setStyle] = useState('modern');
-  const [description, setDescription] = useState(
-    'Een klein IT-consultancy bureau in Rotterdam dat MKB-bedrijven helpt met cloud, cyber security en werkplekbeheer.',
-  );
+  const [industry, setIndustry] = useState('');
+  const [style, setStyle] = useState('');
+  const [description, setDescription] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
