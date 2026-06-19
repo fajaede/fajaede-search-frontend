@@ -163,34 +163,45 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4">
-      <div className="w-full max-w-4xl flex flex-col items-center text-center">
+    <main className="relative flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 overflow-hidden">
+      {/* Premium achtergrond patroon en ambient glows */}
+      <div className="absolute inset-0 -z-10 h-full w-full bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:20px_20px] opacity-70"></div>
+      <div className="absolute top-[-10%] left-[-10%] h-[600px] w-[600px] rounded-full bg-orange-100/40 blur-[100px] -z-10"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] h-[600px] w-[600px] rounded-full bg-blue-100/30 blur-[120px] -z-10"></div>
+
+      <div className="w-full max-w-4xl flex flex-col items-center text-center relative z-10">
+        {/* Version Badge */}
+        <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-orange-50 text-orange-600 border border-orange-100 mb-5 tracking-wider uppercase">
+          <span className="flex h-2 w-2 rounded-full bg-orange-500 animate-pulse"></span>
+          Versie 1.3 · Stable
+        </div>
+
         {/* Logo / Header */}
-        <h1 className="text-6xl md:text-8xl font-extrabold text-slate-800 mb-6 tracking-tight">
-          fajaede<span className="text-orange-500">AI+</span>
+        <h1 className="text-6xl md:text-8xl font-black text-slate-900 mb-6 tracking-tight">
+          fajaede<span className="bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">AI+</span>
         </h1>
-        <p className="text-lg md:text-xl text-slate-600 mb-10 max-w-2xl font-medium">
+        <p className="text-lg md:text-xl text-slate-600 mb-10 max-w-2xl font-normal leading-relaxed">
           De onafhankelijke Europese zoekmachine. Veilig, neutraal en zonder profilering of tracking het web doorzoeken.
         </p>
 
         {/* Zoekbalk */}
         <form 
           onSubmit={handleSearch}
-          className="w-full max-w-3xl relative flex items-center bg-white rounded-full shadow-lg border border-slate-200 p-1.5 mb-8 focus-within:ring-2 focus-within:ring-orange-500 transition-all hover:shadow-xl"
+          className="w-full max-w-3xl relative flex items-center bg-white/80 backdrop-blur-md rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-200/80 p-1.5 mb-10 focus-within:ring-2 focus-within:ring-orange-500/20 focus-within:border-orange-500 transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:border-slate-300"
         >
           <input
             type="text"
             name="q"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Zoek met fajaedeAI+..."
-            className="w-full pl-6 pr-14 md:pr-36 py-3.5 md:py-4 rounded-full focus:outline-none text-lg md:text-xl text-slate-700 bg-transparent"
+            placeholder="Zoek veilig en anoniem..."
+            className="w-full pl-7 pr-14 md:pr-40 py-4 md:py-4.5 rounded-full focus:outline-none text-base md:text-lg text-slate-700 bg-transparent placeholder-slate-400"
             required
           />
           <button
             type="submit"
             disabled={loading}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-slate-800 text-white w-11 h-11 md:w-auto md:h-auto md:px-6 md:py-3.5 rounded-full font-bold hover:bg-slate-700 transition-colors shadow-sm text-base disabled:bg-slate-400 flex items-center justify-center gap-2"
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-slate-900 hover:bg-slate-800 text-white w-11 h-11 md:w-auto md:h-auto md:px-7 md:py-3.5 rounded-full font-semibold transition-all shadow-md hover:shadow-lg text-base disabled:bg-slate-400 flex items-center justify-center gap-2 cursor-pointer"
           >
             {loading ? (
               <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -601,24 +612,65 @@ export default function Home() {
             })()}
           </div>
         ) : (
+          /* Fajaede Intelligence Layer / Features */
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl mb-12 text-left">
+            {/* Card 1: Privacy */}
+            <div className="bg-white/70 backdrop-blur-sm p-6 md:p-8 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.02)] border border-slate-200/60 hover:-translate-y-1 hover:shadow-[0_12px_30px_rgb(0,0,0,0.06)] hover:border-slate-350 hover:bg-white transition-all duration-300 flex gap-4">
+              <div className="flex-shrink-0 w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-500 border border-orange-100">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  <path d="m9 11 2 2 4-4" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-800 mb-1.5">Privacy Eerst</h3>
+                <p className="text-slate-600 text-sm leading-relaxed">Geen tracking, geen profielen. Jouw data blijft van jou, beschermd onder strikte Europese privacywetten.</p>
+              </div>
+            </div>
 
-        /* Fajaede Intelligence Layer / Features */
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl mb-12">
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 flex flex-col items-center text-center hover:border-slate-300 transition-colors">
-            <div className="w-14 h-14 bg-slate-100 text-slate-600 rounded-full flex items-center justify-center mb-5 text-2xl">
-              🛡️
+            {/* Card 2: AI Intelligence */}
+            <div className="bg-white/70 backdrop-blur-sm p-6 md:p-8 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.02)] border border-slate-200/60 hover:-translate-y-1 hover:shadow-[0_12px_30px_rgb(0,0,0,0.06)] hover:border-slate-350 hover:bg-white transition-all duration-300 flex gap-4">
+              <div className="flex-shrink-0 w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 border border-blue-100">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-800 mb-1.5">Fajaede Intelligence</h3>
+                <p className="text-slate-600 text-sm leading-relaxed">Direct heldere samenvattingen en antwoorden op complexe vragen via onze geïntegreerde AI-laag.</p>
+              </div>
             </div>
-            <h2 className="text-xl font-bold text-slate-800 mb-3">Privacy Eerst</h2>
-            <p className="text-slate-600 leading-relaxed">Geen tracking, geen opgeslagen profielen. Jouw data blijft van jou, beschermd onder strikte Europese wetgeving.</p>
-          </div>
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 flex flex-col items-center text-center hover:border-slate-300 transition-colors">
-            <div className="w-14 h-14 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mb-5 text-2xl">
-              ✨
+
+            {/* Card 3: Website Generator */}
+            <div className="bg-white/70 backdrop-blur-sm p-6 md:p-8 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.02)] border border-slate-200/60 hover:-translate-y-1 hover:shadow-[0_12px_30px_rgb(0,0,0,0.06)] hover:border-slate-350 hover:bg-white transition-all duration-300 flex gap-4">
+              <div className="flex-shrink-0 w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500 border border-amber-100">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="18" height="18" x="3" y="3" rx="2" />
+                  <path d="M3 9h18" />
+                  <path d="M9 21V9" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-800 mb-1.5">Website Generator</h3>
+                <p className="text-slate-600 text-sm leading-relaxed">Genereer in een handomdraai complete, professionele HTML-websites op basis van een korte beschrijving.</p>
+              </div>
             </div>
-            <h2 className="text-xl font-bold text-slate-800 mb-3">AI Generator</h2>
-            <p className="text-slate-600 leading-relaxed">Ontwerp direct complete HTML-websites met onze ingebouwde intelligente <span className="font-semibold">Fajaede Layer</span>.</p>
+
+            {/* Card 4: Independence */}
+            <div className="bg-white/70 backdrop-blur-sm p-6 md:p-8 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.02)] border border-slate-200/60 hover:-translate-y-1 hover:shadow-[0_12px_30px_rgb(0,0,0,0.06)] hover:border-slate-350 hover:bg-white transition-all duration-300 flex gap-4">
+              <div className="flex-shrink-0 w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-500 border border-indigo-100">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+                  <path d="M2 12h20" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-800 mb-1.5">Neutraal & Onafhankelijk</h3>
+                <p className="text-slate-600 text-sm leading-relaxed">Een Europees alternatief dat onbevooroordeelde zoekresultaten levert zonder commerciële profilering.</p>
+              </div>
+            </div>
           </div>
-        </div>
         )}
 
         {/* Footer / Links */}
