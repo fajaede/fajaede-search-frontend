@@ -24,12 +24,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     if (res.ok) {
       const data = await res.json();
-      dynamicUrls = data.hits.map((hit: { url: string; published_at?: string }) => ({
-        url: hit.url,
-        lastModified: hit.published_at ? new Date(hit.published_at) : new Date(),
-        changeFrequency: "weekly",
-        priority: 0.6,
-      }));
+      dynamicUrls = data.hits.map((hit: { url: string; published_at?: string }) => {
+        let lastMod = new Date();
+        if (hit.published_at) {
+          const parsed = new Date(hit.published_at);
+          if (!isNaN(parsed.getTime())) {
+            lastMod = parsed;
+          }
+        }
+        return {
+          url: hit.url,
+          lastModified: lastMod,
+          changeFrequency: "weekly",
+          priority: 0.6,
+        };
+      });
     } else {
       console.error("Kon dynamische sitemap niet laden van Meilisearch:", await res.text());
     }
