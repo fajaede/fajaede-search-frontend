@@ -13,6 +13,8 @@ type Hit = {
   language?: string;
   country?: string;
   category?: string;
+  image_url?: string;
+  video_url?: string;
 };
 
 export type Message = {
