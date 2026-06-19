@@ -57,7 +57,7 @@ export default function Home() {
     try {
       const params = new URLSearchParams({ 
         q: searchQuery, 
-        limit: '12' 
+        limit: (tab === "images" || tab === "videos") ? "24" : "12" 
       });
 
       // Stuur de juiste categorie mee naar de backend voor Nieuws of Financieel
@@ -158,10 +158,7 @@ export default function Home() {
   async function handleTabClick(tab: "all" | "images" | "videos" | "news" | "finance") {
     setActiveTab(tab);
     if (q.trim()) {
-      // Als we veranderen van tab, herladen we de resultaten voor de tabs die backend filters hebben
-      if (tab === "news" || tab === "finance" || tab === "all") {
-        await performSearch(q, tab);
-      }
+      await performSearch(q, tab);
     }
   }
 
@@ -179,7 +176,7 @@ export default function Home() {
         {/* Zoekbalk */}
         <form 
           onSubmit={handleSearch}
-          className="w-full max-w-3xl flex items-center bg-white rounded-full shadow-lg border border-slate-200 p-2 mb-8 focus-within:ring-2 focus-within:ring-orange-500 transition-all hover:shadow-xl"
+          className="w-full max-w-3xl relative flex items-center bg-white rounded-full shadow-lg border border-slate-200 p-1.5 mb-8 focus-within:ring-2 focus-within:ring-orange-500 transition-all hover:shadow-xl"
         >
           <input
             type="text"
@@ -187,15 +184,25 @@ export default function Home() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Zoek met fajaedeAI+..."
-            className="w-full px-6 py-4 rounded-full focus:outline-none text-xl text-slate-700 bg-transparent"
+            className="w-full pl-6 pr-14 md:pr-36 py-3.5 md:py-4 rounded-full focus:outline-none text-lg md:text-xl text-slate-700 bg-transparent"
             required
           />
           <button
             type="submit"
             disabled={loading}
-            className="bg-slate-800 text-white px-10 py-4 rounded-full font-bold hover:bg-slate-700 transition-colors shadow-sm text-lg disabled:bg-slate-400"
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-slate-800 text-white w-11 h-11 md:w-auto md:h-auto md:px-6 md:py-3.5 rounded-full font-bold hover:bg-slate-700 transition-colors shadow-sm text-base disabled:bg-slate-400 flex items-center justify-center gap-2"
           >
-            {loading ? "Laden..." : "Zoeken"}
+            {loading ? (
+              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            ) : (
+              <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            )}
+            <span className="hidden md:inline">{loading ? "Laden..." : "Zoeken"}</span>
           </button>
         </form>
 
@@ -248,9 +255,9 @@ export default function Home() {
         )}
 
         {hasSearched ? (
-          <div className="w-full max-w-3xl text-left mb-12 flex flex-col gap-6">
-            {!loading && chatHistory.length > 0 && (
-              <div className="p-6 border border-slate-200 rounded-3xl bg-gradient-to-br from-slate-50 to-blue-50 shadow-sm flex flex-col gap-4">
+          <div className={`w-full max-w-3xl text-left mb-12 flex flex-col gap-6 transition-all duration-300 ${loading ? 'opacity-60 pointer-events-none' : 'opacity-100'}`}>
+            {chatHistory.length > 0 && (
+              <div className="p-6 rounded-3xl bg-gradient-to-br from-slate-50 to-blue-50 shadow-sm flex flex-col gap-4">
                 <div className="flex items-center gap-2 pb-2 border-b border-slate-200/60">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
@@ -259,7 +266,7 @@ export default function Home() {
                     Fajaede Intelligence Layer
                   </h3>
                 </div>
-
+ 
                 {/* Chat Geschiedenis */}
                 <div ref={chatContainerRef} className="flex flex-col gap-4 max-h-[400px] overflow-y-auto pr-2">
                   {chatHistory.map((msg, index) => (
@@ -276,7 +283,7 @@ export default function Home() {
                         className={`p-4 rounded-2xl text-slate-700 text-sm leading-relaxed whitespace-pre-wrap shadow-sm ${
                           msg.role === "user" 
                             ? "bg-slate-800 text-white rounded-tr-none" 
-                            : "bg-white border border-slate-150 rounded-tl-none"
+                            : "bg-white rounded-tl-none"
                         }`}
                       >
                         {msg.content}
@@ -436,69 +443,96 @@ export default function Home() {
 
             {/* Afbeeldingen Resultaten Grid */}
             {activeTab === "images" && (() => {
-              const imageHits = hits.filter(hit => hit.image_url);
-              if (imageHits.length === 0) {
+              if (hits.length === 0) {
                 return (
-                  <div className="text-center py-12 text-slate-500 bg-white rounded-3xl border border-slate-200 p-6">
+                  <div className="text-center py-12 text-slate-500 bg-white rounded-3xl border border-slate-200 p-6 w-full">
                     Geen afbeeldingen gevonden voor deze zoekopdracht.
                   </div>
                 );
               }
               return (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full">
-                  {imageHits.map((hit, i) => (
-                    <div key={hit.id || i} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all group flex flex-col">
-                      <div className="relative aspect-video w-full overflow-hidden bg-slate-100 flex items-center justify-center">
-                        <img 
-                          src={hit.image_url} 
-                          alt={hit.title || "Afbeelding"}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=300&auto=format&fit=crop";
-                          }}
-                        />
+                  {hits.map((hit, i) => {
+                    const fallbackImages = [
+                      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500&auto=format&fit=crop&q=60", // Tech
+                      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&auto=format&fit=crop&q=60", // Business/Finance
+                      "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=500&auto=format&fit=crop&q=60", // News
+                      "https://images.unsplash.com/photo-1507608869274-d3177c8bb4c7?w=500&auto=format&fit=crop&q=60", // Travel/Europe
+                      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=500&auto=format&fit=crop&q=60", // Architecture/City
+                    ];
+                    
+                    let imgSrc = hit.image_url;
+                    if (!imgSrc) {
+                      const text = ((hit.title || "") + " " + (hit.content || "")).toLowerCase();
+                      if (hit.category === "finance" || text.includes("geld") || text.includes("financieel") || text.includes("euro") || text.includes("business") || text.includes("bank")) {
+                        imgSrc = fallbackImages[1];
+                      } else if (hit.category === "news" || text.includes("nieuws") || text.includes("news") || text.includes("krant") || text.includes("politiek")) {
+                        imgSrc = fallbackImages[2];
+                      } else if (text.includes("tech") || text.includes("software") || text.includes("ai") || text.includes("crawler") || text.includes("code")) {
+                        imgSrc = fallbackImages[0];
+                      } else {
+                        imgSrc = fallbackImages[(3 + i) % fallbackImages.length];
+                      }
+                    }
+
+                    return (
+                      <div key={hit.id || i} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all group flex flex-col">
+                        <div className="relative aspect-video w-full overflow-hidden bg-slate-100 flex items-center justify-center">
+                          <img 
+                            src={imgSrc} 
+                            alt={hit.title || "Afbeelding"}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                        <div className="p-3 flex-1 flex flex-col justify-between">
+                          <h4 className="text-xs font-semibold text-slate-700 line-clamp-2 mb-1">
+                            {hit.title || "Naamloze afbeelding"}
+                          </h4>
+                          <a 
+                            href={hit.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-[10px] text-blue-600 hover:underline truncate block"
+                          >
+                            {hit.source || hit.url}
+                          </a>
+                        </div>
                       </div>
-                      <div className="p-3 flex-1 flex flex-col justify-between">
-                        <h4 className="text-xs font-semibold text-slate-700 line-clamp-2 mb-1">
-                          {hit.title || "Naamloze afbeelding"}
-                        </h4>
-                        <a 
-                          href={hit.url} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="text-[10px] text-blue-600 hover:underline truncate block"
-                        >
-                          {hit.source || hit.url}
-                        </a>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               );
             })()}
 
             {/* Video's Resultaten Grid */}
             {activeTab === "videos" && (() => {
-              const videoHits = hits.filter(hit => hit.video_url);
-              if (videoHits.length === 0) {
+              if (hits.length === 0) {
                 return (
-                  <div className="text-center py-12 text-slate-500 bg-white rounded-3xl border border-slate-200 p-6">
+                  <div className="text-center py-12 text-slate-500 bg-white rounded-3xl border border-slate-200 p-6 w-full">
                     Geen video's gevonden voor deze zoekopdracht.
                   </div>
                 );
               }
               return (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                  {videoHits.map((hit, i) => {
+                  {hits.map((hit, i) => {
                     const isYoutube = hit.video_url?.includes("youtube.com") || hit.video_url?.includes("youtu.be");
                     let embedUrl = hit.video_url || "";
                     if (isYoutube && embedUrl.includes("watch?v=")) {
                       embedUrl = embedUrl.replace("watch?v=", "embed/");
                     }
+
+                    const fallbackVideoThumbnails = [
+                      "https://images.unsplash.com/photo-1536240478700-b869070f9279?w=600&auto=format&fit=crop&q=60", // Camera/Video production
+                      "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&auto=format&fit=crop&q=60", // Media lens
+                      "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=600&auto=format&fit=crop&q=60", // Movie screen
+                    ];
+                    const thumbSrc = hit.image_url || fallbackVideoThumbnails[i % fallbackVideoThumbnails.length];
+
                     return (
                       <div key={hit.id || i} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col">
-                        <div className="aspect-video w-full bg-slate-900">
-                          {isYoutube ? (
+                        <div className="aspect-video w-full bg-slate-900 relative">
+                          {isYoutube && embedUrl ? (
                             <iframe 
                               src={embedUrl}
                               className="w-full h-full border-0"
@@ -506,16 +540,24 @@ export default function Home() {
                               allowFullScreen
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-slate-800 text-white relative">
-                              <span className="text-3xl">🎥</span>
-                              <a 
-                                href={hit.video_url} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className="absolute inset-0 flex items-center justify-center bg-black/40 hover:bg-black/60 transition-colors text-white font-bold text-sm"
-                              >
-                                Bekijk Video ▶
-                              </a>
+                            <div className="w-full h-full flex items-center justify-center relative overflow-hidden">
+                              <img 
+                                src={thumbSrc} 
+                                alt={hit.title || "Video thumbnail"}
+                                className="w-full h-full object-cover opacity-80"
+                              />
+                              <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                <a 
+                                  href={hit.video_url || hit.url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="w-14 h-14 bg-orange-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-orange-600 transition-all transform hover:scale-110 cursor-pointer"
+                                >
+                                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="ml-0.5">
+                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                  </svg>
+                                </a>
+                              </div>
                             </div>
                           )}
                         </div>
