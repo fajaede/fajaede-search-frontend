@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 
 type BuilderResponse = {
   site_brief: any;
@@ -12,10 +13,10 @@ type BuilderResponse = {
 
 export default function BuilderPage() {
   const [siteType, setSiteType] = useState('general_business');
-  const [industry, setIndustry] = useState('IT');
+  const [industry, setIndustry] = useState('IT-Consultancy');
   const [style, setStyle] = useState('modern');
   const [description, setDescription] = useState(
-    'Een klein IT-consultancy bureau in Rotterdam dat MKB-bedrijven helpt met cloud en security.',
+    'Een klein IT-consultancy bureau in Rotterdam dat MKB-bedrijven helpt met cloud, cyber security en werkplekbeheer.',
   );
 
   const [loading, setLoading] = useState(false);
@@ -45,14 +46,14 @@ export default function BuilderPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error ?? 'Onbekende fout');
+        setError(data.error ?? 'Er is een fout opgetreden bij het genereren.');
         setResult(null);
         return;
       }
 
       setResult(data as BuilderResponse);
     } catch (err: any) {
-      setError(err?.message ?? 'Netwerkfout');
+      setError(err?.message ?? 'Netwerkfout bij het verbinden met de builder service.');
       setResult(null);
     } finally {
       setLoading(false);
@@ -60,196 +61,288 @@ export default function BuilderPage() {
   }
 
   return (
-    <div className="builder-page" style={{ padding: '2rem', maxWidth: 1200, margin: '0 auto' }}>
-      <h1>Website builder</h1>
-      <p style={{ marginBottom: '1.5rem' }}>
-        Genereer een MKB‑website op basis van een korte beschrijving. De HTML‑preview staat rechts.
-      </p>
+    <div className="relative min-h-screen bg-slate-50 px-4 py-8 md:py-12 overflow-hidden flex flex-col justify-between">
+      {/* Ambient background glows */}
+      <div className="absolute inset-0 -z-10 h-full w-full bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:20px_20px] opacity-70"></div>
+      <div className="absolute top-[-10%] left-[-10%] h-[600px] w-[600px] rounded-full bg-orange-100/40 blur-[100px] -z-10"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] h-[600px] w-[600px] rounded-full bg-blue-100/30 blur-[120px] -z-10"></div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.2fr)', gap: '2rem' }}>
-        {/* Linker kolom: formulier + JSON debug */}
-        <div>
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <div className="w-full max-w-7xl mx-auto flex-1 flex flex-col relative z-10">
+        {/* Navigation & Header */}
+        <header className="mb-8">
+          <Link href="/" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-orange-600 transition-colors mb-4 font-semibold group">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transform group-hover:-translate-x-0.5 transition-transform">
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+            Terug naar Zoeken
+          </Link>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
-              <label>
-                Site type
+              <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-2">
+                fajaede<span className="bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">Builder</span>
+              </h1>
+              <p className="text-slate-600 max-w-2xl text-sm md:text-base leading-relaxed">
+                Ontwerp direct complete, professionele HTML-websites op basis van een korte beschrijving met behulp van kunstmatige intelligentie.
+              </p>
+            </div>
+            {result && (
+              <button
+                onClick={() => {
+                  if (result) {
+                    navigator.clipboard.writeText(result.html);
+                    alert('HTML broncode gekopieerd naar klembord!');
+                  }
+                }}
+                className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-full text-sm font-semibold transition-all shadow-sm cursor-pointer self-start md:self-end"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                </svg>
+                Kopieer HTML
+              </button>
+            )}
+          </div>
+        </header>
+
+        {/* Main Dashboard Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start flex-1 w-full">
+          
+          {/* Left Column: Form Controls */}
+          <div className="lg:col-span-5 xl:col-span-4 bg-white/80 backdrop-blur-md p-6 md:p-8 rounded-3xl border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.02)] flex flex-col gap-6">
+            <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-3">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f97316" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+              </svg>
+              Website Details
+            </h2>
+
+            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+              {/* Site Type */}
+              <div className="flex flex-col">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                  Type Website
+                </label>
                 <select
                   value={siteType}
                   onChange={(e) => setSiteType(e.target.value)}
-                  style={{ display: 'block', marginTop: 4 }}
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-slate-700 text-sm font-semibold transition-all cursor-pointer"
                 >
-                  <option value="general_business">Algemeen bedrijf</option>
+                  <option value="general_business">Algemene Bedrijfswebsite</option>
                   <option value="law_firm">Advocatenkantoor</option>
                   <option value="restaurant">Restaurant</option>
-                  {/* etc. */}
+                  <option value="webshop">Webshop / E-commerce</option>
+                  <option value="portfolio">Persoonlijk Portfolio</option>
+                  <option value="medical">Medische Praktijk / Kliniek</option>
                 </select>
-              </label>
-            </div>
+              </div>
 
-            <div>
-              <label>
-                Sector / industry
+              {/* Industry */}
+              <div className="flex flex-col">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                  Sector / Branche
+                </label>
                 <input
                   type="text"
                   value={industry}
                   onChange={(e) => setIndustry(e.target.value)}
-                  style={{ display: 'block', marginTop: 4, width: '100%' }}
+                  placeholder="Bijv. IT Consultancy, Horeca, Transport"
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-slate-700 text-sm transition-all"
+                  required
                 />
-              </label>
-            </div>
+              </div>
 
-            <div>
-              <label>
-                Stijl
+              {/* Style */}
+              <div className="flex flex-col">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                  Design Stijl
+                </label>
                 <input
                   type="text"
                   value={style}
                   onChange={(e) => setStyle(e.target.value)}
-                  style={{ display: 'block', marginTop: 4, width: '100%' }}
+                  placeholder="Bijv. modern, minimalistisch, warm, luxe"
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-slate-700 text-sm transition-all"
+                  required
                 />
-              </label>
-            </div>
+              </div>
 
-            <div>
-              <label>
-                Beschrijving
+              {/* Description */}
+              <div className="flex flex-col">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                  Bedrijfsbeschrijving
+                </label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Beschrijf wat het bedrijf doet, hun belangrijkste diensten, locatie en unieke eigenschappen..."
                   rows={5}
-                  style={{ display: 'block', marginTop: 4, width: '100%' }}
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-slate-700 text-sm transition-all resize-none leading-relaxed"
+                  required
                 />
-              </label>
-            </div>
+              </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                padding: '0.7rem 1.4rem',
-                borderRadius: 999,
-                border: 'none',
-                cursor: 'pointer',
-                background: '#1a73e8',
-                color: 'white',
-                fontWeight: 500,
-              }}
-            >
-              {loading ? 'Genereren…' : 'Genereer website'}
-            </button>
-          </form>
+              {/* Error Alert */}
+              {error && (
+                <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-xs text-red-600 flex items-start gap-2.5 leading-relaxed">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="flex-shrink-0 mt-0.5">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" x2="12" y1="8" y2="12" />
+                    <line x1="12" x2="12.01" y1="16" y2="16" />
+                  </svg>
+                  <span>{error}</span>
+                </div>
+              )}
 
-          {error && (
-            <div style={{ marginTop: '1rem', color: 'red' }}>
-              Fout: {error}
-            </div>
-          )}
-
-          {result && (
-            <div style={{ marginTop: '1rem' }}>
-              <h2>JSON result</h2>
-              <pre
-                style={{
-                  maxHeight: 300,
-                  overflow: 'auto',
-                  background: '#111827',
-                  color: '#e5e7eb',
-                  padding: '0.75rem',
-                  borderRadius: 8,
-                  fontSize: 12,
-                }}
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold py-3.5 px-6 rounded-full shadow-md hover:shadow-lg disabled:from-slate-400 disabled:to-slate-400 transition-all flex items-center justify-center gap-2 cursor-pointer text-sm md:text-base mt-2"
               >
-                {JSON.stringify(
-                  {
-                    site_brief: result.site_brief,
-                    site_content: result.site_content,
-                  },
-                  null,
-                  2,
+                {loading ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Genereren…
+                  </>
+                ) : (
+                  <>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 3v12" />
+                      <path d="m8 11 4 4 4-4" />
+                      <path d="M8 5H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4" />
+                    </svg>
+                    Genereer website
+                  </>
                 )}
-              </pre>
-            </div>
-          )}
-        </div>
-
-        {/* Rechter kolom: HTML preview */}
-        <div>
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem', alignItems: 'center' }}>
-            <h2 style={{ margin: 0, marginRight: 'auto' }}>
-              {viewMode === 'preview' ? 'Preview' : 'HTML Bron'}
-            </h2>
-            <button
-              type="button"
-              onClick={() => setViewMode('preview')}
-              disabled={viewMode === 'preview'}
-              style={{
-                padding: '0.5rem 1rem',
-                borderRadius: 6,
-                border: '1px solid #e5e7eb',
-                cursor: viewMode === 'preview' ? 'default' : 'pointer',
-                background: viewMode === 'preview' ? '#f3f4f6' : 'white',
-                fontSize: '0.85rem'
-              }}
-            >
-              Preview
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('html')}
-              disabled={viewMode === 'html'}
-              style={{
-                padding: '0.5rem 1rem',
-                borderRadius: 6,
-                border: '1px solid #e5e7eb',
-                cursor: viewMode === 'html' ? 'default' : 'pointer',
-                background: viewMode === 'html' ? '#f3f4f6' : 'white',
-                fontSize: '0.85rem'
-              }}
-            >
-              HTML
-            </button>
+              </button>
+            </form>
           </div>
 
-          {!result && <p>Nog geen website gegenereerd.</p>}
-          {result && viewMode === 'preview' && (
-            /* 
-               BEVEILIGING: Strictly sandboxed iframe voor preview van LLM-output.
-               - allow-same-origin: Nodig voor rendering van CSS en anchors.
-               - GEEN allow-scripts: Maximale veiligheid tegen XSS (JS is uitgeschakeld).
-               - GEEN allow-top-navigation/popups/forms: Voorkomt redirects, phishing of form-submits.
-            */
-            <iframe
-              title="Website preview"
-              srcDoc={result.html}
-              sandbox="allow-same-origin"
-              style={{
-                width: '100%',
-                height: '80vh',
-                border: '1px solid #e5e7eb',
-                borderRadius: 8,
-                background: 'white',
-              }}
-            />
-          )}
+          {/* Right Column: Live Preview & HTML Code */}
+          <div className="lg:col-span-7 xl:col-span-8 flex flex-col h-full">
+            {/* Header controls for Preview Window */}
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+              <div className="flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  {result ? 'Resultaat beschikbaar' : 'Wacht op invoer'}
+                </span>
+              </div>
+              
+              {/* Tab Selector */}
+              <div className="bg-slate-200/60 p-1 rounded-full flex gap-1">
+                <button
+                  onClick={() => setViewMode('preview')}
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    viewMode === 'preview'
+                      ? 'bg-white text-slate-800 shadow-sm'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  Live Preview
+                </button>
+                <button
+                  onClick={() => setViewMode('html')}
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    viewMode === 'html'
+                      ? 'bg-white text-slate-800 shadow-sm'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  HTML Code
+                </button>
+              </div>
+            </div>
 
-          {result && viewMode === 'html' && (
-            <pre
-              style={{
-                width: '100%',
-                height: '80vh',
-                border: '1px solid #e5e7eb',
-                borderRadius: 8,
-                background: '#111827',
-                color: '#e5e7eb',
-                padding: '0.75rem',
-                overflow: 'auto',
-                fontSize: 12,
-              }}
-            >
-              {result.html}
-            </pre>
-          )}
+            {/* Browser Preview Window */}
+            <div className="w-full bg-slate-900 border border-slate-200/80 rounded-2xl overflow-hidden shadow-lg flex flex-col h-[75vh]">
+              {/* Browser Header Bar */}
+              <div className="bg-slate-100 border-b border-slate-200 px-4 py-3 flex items-center gap-4 flex-shrink-0">
+                {/* Traffic lights dots */}
+                <div className="flex gap-1.5 flex-shrink-0">
+                  <span className="w-3 h-3 rounded-full bg-rose-400"></span>
+                  <span className="w-3 h-3 rounded-full bg-amber-400"></span>
+                  <span className="w-3 h-3 rounded-full bg-emerald-400"></span>
+                </div>
+                {/* Fake Address bar */}
+                <div className="flex-1 bg-white border border-slate-200 rounded-lg py-1 px-3 text-center text-xs text-slate-400 truncate select-none font-mono">
+                  {result ? `fajaedebuilder.ai/sites/${siteType}` : 'fajaedebuilder.ai/preview-site'}
+                </div>
+              </div>
+
+              {/* Browser Canvas Body */}
+              <div className="flex-1 bg-white relative overflow-hidden h-full">
+                {!result ? (
+                  /* Placeholder State when not generated */
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8 bg-slate-50/50">
+                    <div className="w-20 h-20 bg-orange-50 border border-orange-100 text-orange-500 rounded-3xl flex items-center justify-center mb-6 shadow-[0_4px_20px_rgb(0,0,0,0.02)]">
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <rect width="18" height="18" x="3" y="3" rx="2" />
+                        <path d="M21 9H3" />
+                        <path d="M21 14H3" />
+                        <path d="M9 21V9" />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-800 mb-2">Jouw AI-website verschijnt hier</h3>
+                    <p className="text-slate-500 max-w-sm text-sm leading-relaxed">
+                      Vul links de details van het MKB-bedrijf in en klik op de knop om direct een volledige, responsive website te genereren.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Active Preview */}
+                    {viewMode === 'preview' ? (
+                      <iframe
+                        title="Website preview"
+                        srcDoc={result.html}
+                        sandbox="allow-same-origin"
+                        className="w-full h-full border-none bg-white"
+                      />
+                    ) : (
+                      /* Active Code View */
+                      <pre className="w-full h-full bg-slate-950 text-slate-200 p-6 overflow-auto text-xs md:text-sm font-mono leading-relaxed select-text">
+                        <code>{result.html}</code>
+                      </pre>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
         </div>
+
+        {/* Footer info */}
+        {result && result.site_brief && (
+          <div className="mt-8 bg-white/70 backdrop-blur-sm p-6 rounded-3xl border border-slate-200/60 shadow-[0_4px_20px_rgb(0,0,0,0.02)]">
+            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Gegenereerde SEO Briefing</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-slate-600">
+              <div>
+                <span className="font-bold text-slate-800 block mb-1">Doelgroep</span>
+                {result.site_brief.target_audience || 'Geen details'}
+              </div>
+              <div>
+                <span className="font-bold text-slate-800 block mb-1">Keywords</span>
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  {(result.site_brief.keywords || []).map((k: string, i: number) => (
+                    <span key={i} className="px-2 py-0.5 bg-slate-100 text-slate-700 text-xs rounded font-semibold border border-slate-200">
+                      {k}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <span className="font-bold text-slate-800 block mb-1">Kernboodschap</span>
+                {result.site_brief.core_value || 'Geen details'}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
