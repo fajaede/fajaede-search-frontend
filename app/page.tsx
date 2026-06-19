@@ -626,6 +626,9 @@ export default function Home() {
           <Link href="/privacy-policy" className="hover:text-orange-600 transition-colors">
             Privacybeleid
           </Link>
+          <Link href="/cookie-policy" className="hover:text-orange-600 transition-colors">
+            Cookiebeleid
+          </Link>
           <a href="#" className="hover:text-orange-600 transition-colors">
             Website Generator
           </a>
