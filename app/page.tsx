@@ -257,7 +257,7 @@ export default function Home() {
         {hasSearched ? (
           <div className={`w-full max-w-3xl text-left mb-12 flex flex-col gap-6 transition-all duration-300 ${loading ? 'opacity-60 pointer-events-none' : 'opacity-100'}`}>
             {chatHistory.length > 0 && (
-              <div className="p-6 rounded-3xl bg-gradient-to-br from-slate-50 to-blue-50 shadow-sm flex flex-col gap-4">
+              <div className="w-[calc(100%+2rem)] -mx-4 md:w-full md:mx-0 p-4 md:p-6 rounded-none md:rounded-3xl bg-gradient-to-br from-slate-50 to-blue-50 shadow-sm flex flex-col gap-4">
                 <div className="flex items-center gap-2 pb-2 border-b border-slate-200/60">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
@@ -321,9 +321,19 @@ export default function Home() {
                     <button
                       type="submit"
                       disabled={followUpLoading}
-                      className="bg-blue-600 text-white px-6 py-3 rounded-full font-bold hover:bg-blue-500 transition-colors shadow-sm text-sm disabled:bg-slate-400"
+                      className="bg-blue-600 text-white p-3 rounded-full hover:bg-blue-500 transition-colors shadow-sm disabled:bg-slate-400 flex items-center justify-center min-w-[42px] h-[42px]"
+                      title="Stuur"
                     >
-                      {followUpLoading ? "Laden..." : "Stuur"}
+                      {followUpLoading ? (
+                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      ) : (
+                        <svg className="h-5 w-5 text-white transform rotate-45 -mr-0.5 mt-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"></path>
+                        </svg>
+                      )}
                     </button>
                   </form>
                 </div>
@@ -453,27 +463,7 @@ export default function Home() {
               return (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full">
                   {hits.map((hit, i) => {
-                    const fallbackImages = [
-                      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500&auto=format&fit=crop&q=60", // Tech
-                      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&auto=format&fit=crop&q=60", // Business/Finance
-                      "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=500&auto=format&fit=crop&q=60", // News
-                      "https://images.unsplash.com/photo-1507608869274-d3177c8bb4c7?w=500&auto=format&fit=crop&q=60", // Travel/Europe
-                      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=500&auto=format&fit=crop&q=60", // Architecture/City
-                    ];
-                    
-                    let imgSrc = hit.image_url;
-                    if (!imgSrc) {
-                      const text = ((hit.title || "") + " " + (hit.content || "")).toLowerCase();
-                      if (hit.category === "finance" || text.includes("geld") || text.includes("financieel") || text.includes("euro") || text.includes("business") || text.includes("bank")) {
-                        imgSrc = fallbackImages[1];
-                      } else if (hit.category === "news" || text.includes("nieuws") || text.includes("news") || text.includes("krant") || text.includes("politiek")) {
-                        imgSrc = fallbackImages[2];
-                      } else if (text.includes("tech") || text.includes("software") || text.includes("ai") || text.includes("crawler") || text.includes("code")) {
-                        imgSrc = fallbackImages[0];
-                      } else {
-                        imgSrc = fallbackImages[(3 + i) % fallbackImages.length];
-                      }
-                    }
+                    const imgSrc = hit.image_url || `https://image.thum.io/get/width/400/crop/800/${hit.url}`;
 
                     return (
                       <div key={hit.id || i} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all group flex flex-col">
@@ -482,6 +472,26 @@ export default function Home() {
                             src={imgSrc} 
                             alt={hit.title || "Afbeelding"}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              const fallbackImages = [
+                                "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500&auto=format&fit=crop&q=60", // Tech
+                                "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&auto=format&fit=crop&q=60", // Business/Finance
+                                "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=500&auto=format&fit=crop&q=60", // News
+                                "https://images.unsplash.com/photo-1507608869274-d3177c8bb4c7?w=500&auto=format&fit=crop&q=60", // Travel/Europe
+                                "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=500&auto=format&fit=crop&q=60", // Architecture/City
+                              ];
+                              const text = ((hit.title || "") + " " + (hit.content || "")).toLowerCase();
+                              let fallbackSrc = fallbackImages[(3 + i) % fallbackImages.length];
+                              if (hit.category === "finance" || text.includes("geld") || text.includes("financieel") || text.includes("euro") || text.includes("business") || text.includes("bank")) {
+                                fallbackSrc = fallbackImages[1];
+                              } else if (hit.category === "news" || text.includes("nieuws") || text.includes("news") || text.includes("krant") || text.includes("politiek")) {
+                                fallbackSrc = fallbackImages[2];
+                              } else if (text.includes("tech") || text.includes("software") || text.includes("ai") || text.includes("crawler") || text.includes("code")) {
+                                fallbackSrc = fallbackImages[0];
+                              }
+                              (e.target as HTMLImageElement).src = fallbackSrc;
+                              (e.target as HTMLImageElement).onerror = null;
+                            }}
                           />
                         </div>
                         <div className="p-3 flex-1 flex flex-col justify-between">
@@ -522,12 +532,7 @@ export default function Home() {
                       embedUrl = embedUrl.replace("watch?v=", "embed/");
                     }
 
-                    const fallbackVideoThumbnails = [
-                      "https://images.unsplash.com/photo-1536240478700-b869070f9279?w=600&auto=format&fit=crop&q=60", // Camera/Video production
-                      "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&auto=format&fit=crop&q=60", // Media lens
-                      "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=600&auto=format&fit=crop&q=60", // Movie screen
-                    ];
-                    const thumbSrc = hit.image_url || fallbackVideoThumbnails[i % fallbackVideoThumbnails.length];
+                    const thumbSrc = hit.image_url || `https://image.thum.io/get/width/400/crop/800/${hit.url}`;
 
                     return (
                       <div key={hit.id || i} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col">
@@ -545,6 +550,15 @@ export default function Home() {
                                 src={thumbSrc} 
                                 alt={hit.title || "Video thumbnail"}
                                 className="w-full h-full object-cover opacity-80"
+                                onError={(e) => {
+                                  const fallbackVideoThumbnails = [
+                                    "https://images.unsplash.com/photo-1536240478700-b869070f9279?w=600&auto=format&fit=crop&q=60", // Camera/Video production
+                                    "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&auto=format&fit=crop&q=60", // Media lens
+                                    "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=600&auto=format&fit=crop&q=60", // Movie screen
+                                  ];
+                                  (e.target as HTMLImageElement).src = fallbackVideoThumbnails[i % fallbackVideoThumbnails.length];
+                                  (e.target as HTMLImageElement).onerror = null;
+                                }}
                               />
                               <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                                 <a 
