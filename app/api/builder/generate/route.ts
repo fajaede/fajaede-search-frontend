@@ -6,7 +6,8 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     // Pas de URL aan als je FastAPI elders draait
-    const res = await fetch('http://localhost:18000/api/builder/generate', {
+    const backendUrl = process.env.BACKEND_URL || 'http://116.203.39.166:18000';
+    const res = await fetch(`${backendUrl}/api/builder/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
