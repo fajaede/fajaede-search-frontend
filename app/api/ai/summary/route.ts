@@ -90,19 +90,25 @@ Maak nu:
 2) Sluit af met één duidelijke vervolgvraag in het Nederlands.
 `.trim();
 
-    // 2. Call naar Ollama
-    const llmRes = await fetch(`${OLLAMA_URL}/api/chat`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: OLLAMA_MODEL,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        stream: false,
-      }),
-    });
+    // 2. Call naar Ollama with network error handling
+    let llmRes: Response;
+    try {
+      llmRes = await fetch(`${OLLAMA_URL}/api/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: OLLAMA_MODEL,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          stream: false,
+        }),
+      });
+    } catch (err) {
+      console.error("LLM request failed (network):", err);
+      return NextResponse.json({ error: "LLM request failed", message: String(err) }, { status: 500 });
+    }
 
     if (!llmRes.ok) {
       const text = await llmRes.text();
