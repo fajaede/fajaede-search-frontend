@@ -1,9 +1,18 @@
 // app/api/ai/summary/route.ts
 import { NextRequest, NextResponse } from "next/server";
 
-const MEILI_HOST = process.env.MEILI_HOST!;
-const MEILI_SEARCH_KEY = process.env.MEILI_SEARCH_KEY!;
+// ---- REQUIRED ENVIRONMENT VARIABLES -------------------------------------------------
+const MEILI_HOST = process.env.MEILI_HOST;
+const MEILI_SEARCH_KEY = process.env.MEILI_SEARCH_KEY;
 const MEILI_INDEX = process.env.MEILI_INDEX || "pages";
+
+if (!MEILI_HOST || !MEILI_SEARCH_KEY) {
+  console.error("Missing required MEILI environment variables");
+  return NextResponse.json(
+    { error: "Server mis-configuration: MEILI_HOST / MEILI_SEARCH_KEY missing" },
+    { status: 500 }
+  );
+}
 
 // Gebruik hier expliciet localhost, want we weten dat dat werkt
 const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434";
