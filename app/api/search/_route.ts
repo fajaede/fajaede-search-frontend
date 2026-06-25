@@ -6,6 +6,12 @@ const MEILI_INDEX = process.env.MEILI_INDEX || "pages";
 
 export async function POST(req: NextRequest) {
   try {
+    const { q, limit = 10 } = await req.json();
+
+    if (!q || typeof q !== "string") {
+      return NextResponse.json({ error: "Missing query" }, { status: 400 });
+    }
+
     // Respect build-time flag to skip Meili during static generation
     const disableMeili = process.env.MEILI_DISABLE_ON_BUILD === "true";
     if (disableMeili) {

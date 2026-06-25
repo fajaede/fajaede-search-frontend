@@ -15,15 +15,20 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify(body),
     });
 
-    const data = await res.json();
-
+    // Verify response is OK and JSON
     if (!res.ok) {
-      return NextResponse.json(
-        { error: data.detail ?? 'Builder API error' },
-        { status: res.status },
-      );
+      // Try to read error text for debugging
+      const errText = await res.text();
+      console.error('Builder proxy error (non‑OK):', errText);
+      return NextResponse.json({ error: 'Builder API error', details: errText }, { status: res.status });
     }
-
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const txt = await res.text();
+      console.error('Builder proxy returned non‑JSON:', txt);
+      return NextResponse.json({ error: 'Invalid response format', raw: txt }, { status: 502 });
+    }
+    const data = await res.json();
     return NextResponse.json(data);
   } catch (err: any) {
     console.error('Builder proxy error:', err);
