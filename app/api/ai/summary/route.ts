@@ -6,13 +6,7 @@ const MEILI_HOST = process.env.MEILI_HOST;
 const MEILI_SEARCH_KEY = process.env.MEILI_SEARCH_KEY;
 const MEILI_INDEX = process.env.MEILI_INDEX || "pages";
 
-if (!MEILI_HOST || !MEILI_SEARCH_KEY) {
-  console.error("Missing required MEILI environment variables");
-  return NextResponse.json(
-    { error: "Server mis-configuration: MEILI_HOST / MEILI_SEARCH_KEY missing" },
-    { status: 500 }
-  );
-}
+
 
 // Gebruik hier expliciet localhost, want we weten dat dat werkt
 const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434";
@@ -21,6 +15,14 @@ const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "phi3:mini";
 export async function POST(req: NextRequest) {
   try {
     const { q, limit = 5, conversationId } = await req.json();
+
+if (!MEILI_HOST || !MEILI_SEARCH_KEY) {
+  console.error("Missing required MEILI environment variables");
+  return NextResponse.json(
+    { error: "Server mis-configuration: MEILI_HOST / MEILI_SEARCH_KEY missing" },
+    { status: 500 }
+  );
+}
 
     if (!q || typeof q !== "string") {
       return NextResponse.json({ error: "Missing query" }, { status: 400 });

@@ -22,8 +22,24 @@ export async function POST(req: NextRequest) {
       cache: "no-store",
     });
 
-    const data = await res.json();
-    return NextResponse.json(data, { status: res.status });
+    // Handle non‑OK responses
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("Search proxy error:", errText);
+      return NextResponse.json({ error: "Search failed", details: errText }, { status: res.status });
+    }
+
+    const contentType = res.headers.get("content-type") || "";
+    let data: any = null;
+    if (contentType.includes("application/json")) {
+      data = await res.json();
+    } else {
+      const text = await res.text();
+      console.error("Search proxy returned non‑JSON:", text);
+      return NextResponse.json({ error: "Invalid response format", raw: text }, { status: 502 });
+    }
+
+    return NextResponse.json(data, { status: 200 });
   } catch (error) {
     console.error("Search API error:", error);
     return NextResponse.json({ error: "Search request failed" }, { status: 500 });

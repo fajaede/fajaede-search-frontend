@@ -20,6 +20,7 @@ export default function SearchBox() {
   const [lastSearchedQuery, setLastSearchedQuery] = useState("");
   const [hits, setHits] = useState<Hit[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showAiSummary, setShowAiSummary] = useState(false);
   const [error, setError] = useState("");
 
   async function search() {
@@ -88,8 +89,24 @@ export default function SearchBox() {
         <p style={{ color: "#b42318", marginBottom: 16 }}>{error}</p>
       )}
 
-      {/* NIEUW: AI-samenvatting + vervolgvraag boven de resultaten */}
-      <AISummaryBar query={lastSearchedQuery} />
+      {/* Toggle AI summary */}
+      {showAiSummary && <AISummaryBar query={lastSearchedQuery} />}
+      {lastSearchedQuery && !showAiSummary && (
+        <button
+          onClick={() => setShowAiSummary(true)}
+          style={{
+            marginTop: 16,
+            padding: "8px 12px",
+            borderRadius: 8,
+            border: "none",
+            background: "#01696f",
+            color: "white",
+            fontWeight: 600,
+          }}
+        >
+          Toon AI‑samenvatting
+        </button>
+      )}
 
       <div style={{ display: "grid", gap: 16 }}>
         {hits.map((hit, i) => (
