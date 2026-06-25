@@ -107,13 +107,19 @@ Maak nu:
     if (!llmRes.ok) {
       const text = await llmRes.text();
       console.error("LLM error:", text);
-      return NextResponse.json(
-        { error: "LLM request failed", message: text },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "LLM request failed", message: text }, { status: 500 });
     }
 
-    const llmJson = await llmRes.json();
+    // Verify content type before parsing JSON
+    const llmContentType = llmRes.headers.get("content-type") || "";
+    let llmJson: any;
+    if (llmContentType.includes("application/json")) {
+      llmJson = await llmRes.json();
+    } else {
+      const text = await llmRes.text();
+      console.error("LLM returned non‑JSON response:", text);
+      return NextResponse.json({ error: "LLM response not JSON", raw: text }, { status: 502 });
+    }
 
     // Ollama chat-response: message.content bevat de tekst
     const fullText: string =
