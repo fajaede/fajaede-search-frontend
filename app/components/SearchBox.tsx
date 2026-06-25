@@ -54,7 +54,7 @@ export default function SearchBox() {
 
   return (
     <section style={{ marginTop: 32 }}>
-      <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
+      <div style={{ display: "flex", gap: 12, marginBottom: 24, alignItems: "center" }}>
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -83,31 +83,42 @@ export default function SearchBox() {
         >
           {loading ? "Zoeken..." : "Zoeken"}
         </button>
+        {/* Toggle AI summary button */}
+        {showAiSummary ? (
+          <button
+            onClick={() => setShowAiSummary(false)}
+            style={{
+              padding: "8px 12px",
+              borderRadius: 8,
+              border: "none",
+              background: "#c0392b",
+              color: "white",
+              fontWeight: 600,
+            }}
+          >
+            Verberg AI‑samenvatting
+          </button>
+        ) : (
+          <button
+            onClick={() => setShowAiSummary(true)}
+            style={{
+              padding: "8px 12px",
+              borderRadius: 8,
+              border: "none",
+              background: "#01696f",
+              color: "white",
+              fontWeight: 600,
+            }}
+          >
+            Toon AI‑samenvatting
+          </button>
+        )}
       </div>
-
       {error && (
         <p style={{ color: "#b42318", marginBottom: 16 }}>{error}</p>
       )}
-
-      {/* Toggle AI summary */}
+      {/* Render AI summary directly under the menu bar when enabled */}
       {showAiSummary && <AISummaryBar query={lastSearchedQuery} />}
-      {lastSearchedQuery && !showAiSummary && (
-        <button
-          onClick={() => setShowAiSummary(true)}
-          style={{
-            marginTop: 16,
-            padding: "8px 12px",
-            borderRadius: 8,
-            border: "none",
-            background: "#01696f",
-            color: "white",
-            fontWeight: 600,
-          }}
-        >
-          Toon AI‑samenvatting
-        </button>
-      )}
-
       <div style={{ display: "grid", gap: 16 }}>
         {hits.map((hit, i) => (
           <article
