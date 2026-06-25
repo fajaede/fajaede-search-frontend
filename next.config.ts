@@ -9,19 +9,11 @@ const nextConfig: NextConfig = {
     OLLAMA_URL: process.env.OLLAMA_URL,
     OLLAMA_MODEL: process.env.OLLAMA_MODEL,
   },
-  async rewrites() {
-    return [
-      // Specific rewrite for the /search endpoint, which lives on the API root.
-      {
-        source: '/api/search',
-        destination: 'http://116.203.39.166:18000/search',
-      },
-      // General rewrite for other /api/* endpoints such as the website builder.
-      {
-        source: '/api/:path*',
-        destination: 'http://116.203.39.166:18000/api/:path*',
-      },
-    ];
+  // No custom rewrites – we want to use our own API routes
+  // rewrites: async () => [],
+  // Explicitly set the TurboPack root to silence the warning about multiple lockfiles
+  turbopack: {
+    root: __dirname,
   },
 };
 

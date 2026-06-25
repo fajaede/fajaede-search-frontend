@@ -8,12 +8,23 @@ const MEILI_INDEX = process.env.MEILI_INDEX || "pages";
  * Perform a Meilisearch request with timeout, flag, and response validation.
  */
 async function performSearch(q: string, limit: number) {
+  // Validate required environment variables
+  if (!MEILI_HOST) {
+    console.error('MEILI_HOST is not configured');
+    return NextResponse.json({ error: 'Search service not configured' }, { status: 500 });
+  }
+  if (!MEILI_SEARCH_KEY) {
+    console.error('MEILI_SEARCH_KEY is not configured');
+    return NextResponse.json({ error: 'Search service not configured' }, { status: 500 });
+  }
   // Skip Meilisearch during static generation if the flag is set.
   const disableMeili = process.env.MEILI_DISABLE_ON_BUILD === "true";
   if (disableMeili) {
     console.log("MEILI_DISABLE_ON_BUILD is true – skipping Meilisearch search.");
     return NextResponse.json({ error: "Meili disabled in build" }, { status: 503 });
   }
+  // ... rest of function unchanged
+
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
