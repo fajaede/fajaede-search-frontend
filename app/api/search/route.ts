@@ -23,9 +23,6 @@ async function performSearch(q: string, limit: number) {
     console.log("MEILI_DISABLE_ON_BUILD is true – skipping Meilisearch search.");
     return NextResponse.json({ error: "Meili disabled in build" }, { status: 503 });
   }
-  // ... rest of function unchanged
-
-
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
   let res: Response;
