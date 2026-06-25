@@ -12,6 +12,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing query" }, { status: 400 });
     }
 
+    // Respect build-time flag to skip Meili during static generation
+    const disableMeili = process.env.MEILI_DISABLE_ON_BUILD === "true";
+    if (disableMeili) {
+      console.log("MEILI_DISABLE_ON_BUILD is true – skipping Meilisearch search.");
+      return NextResponse.json({ error: "Meili disabled in build" }, { status: 503 });
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
     const res = await fetch(`${MEILI_HOST}/indexes/${MEILI_INDEX}/search`, {
       method: "POST",
       headers: {
@@ -20,7 +29,9 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({ q, limit }),
       cache: "no-store",
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
 
     // Handle non‑OK responses
     if (!res.ok) {
