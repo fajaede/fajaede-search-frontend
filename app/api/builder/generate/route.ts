@@ -6,7 +6,12 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     // Pas de URL aan als je FastAPI elders draait
-    const backendUrl = process.env.BACKEND_URL || 'http://116.203.39.166:18000';
+    const backendUrl = process.env.BACKEND_URL;
+
+    if (!backendUrl) {
+      throw new Error('BACKEND_URL is not set in the environment variables.');
+    }
+
     const res = await fetch(`${backendUrl}/api/builder/generate`, {
       method: 'POST',
       headers: {
@@ -25,10 +30,10 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json(data);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Builder proxy error:', err);
     return NextResponse.json(
-      { error: err?.message ?? 'Internal error' },
+      { error: err instanceof Error ? err.message : 'Internal error' },
       { status: 500 },
     );
   }

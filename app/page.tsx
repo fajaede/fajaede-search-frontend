@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
@@ -27,7 +28,6 @@ export default function Home() {
   const [hits, setHits] = useState<Hit[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [aiSummary, setAiSummary] = useState("");
   const [hasSearched, setHasSearched] = useState(false);
 
   // Conversatiegeschiedenis voor Fajaede Intelligence Layer
@@ -49,72 +49,70 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, [chatHistory, followUpLoading]);
 
-  // Algemene zoekfunctie die tabs en categorieën ondersteunt
-  async function performSearch(searchQuery: string, tab: "all" | "images" | "videos" | "news" | "finance", historyList: Message[] = []) {
-    setLoading(true);
+  // Unified API call function
+  const callSearchAPI = async (params: URLSearchParams) => {
+    const res = await fetch(`/api/search?${params.toString()}`);
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.detail || "An unknown error occurred during the search.");
+    }
+    return data;
+  };
+
+  // Unified search function supporting tabs, history, and loading states
+  const performSearch = async (
+    searchQuery: string,
+    currentTab: "all" | "images" | "videos" | "news" | "finance",
+    historyList: Message[] = [],
+    isFollowUp: boolean = false
+  ) => {
+    if (!isFollowUp) {
+      setLoading(true);
+      setChatHistory([]); // Reset chat for a new search
+    } else {
+      setFollowUpLoading(true);
+    }
     setError("");
-    
+
     try {
-      const params = new URLSearchParams({ 
-        q: searchQuery, 
-        limit: (tab === "images" || tab === "videos") ? "24" : "12" 
+      const params = new URLSearchParams({
+        q: searchQuery,
+        limit: (currentTab === "images" || currentTab === "videos") ? "24" : "12"
       });
 
-      // Stuur de juiste categorie mee naar de backend voor Nieuws of Financieel
-      if (tab === "news") {
-        params.append("category", "news");
-      } else if (tab === "finance") {
-        params.append("category", "finance");
-      }
-
+      if (currentTab === "news" || currentTab === "finance") params.append("category", currentTab);
       if (historyList.length > 0) {
         params.append("history", JSON.stringify(historyList.slice(-5)));
       }
 
-      const res = await fetch(`/api/search?${params.toString()}`);
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.detail || "Search failed");
+      const data = await callSearchAPI(params);
 
       setHits(data.results || []);
       const newAi = data.ai || "";
-      setAiSummary(newAi);
 
-      if (newAi) {
-        if (historyList.length === 0) {
-          setChatHistory([{ role: "assistant", content: newAi }]);
-        } else {
-          setChatHistory([...historyList, { role: "assistant", content: newAi }]);
-        }
-      }
+      // Add AI response to history. For new searches, this creates the initial message.
+      // For follow-ups, it adds the assistant's reply.
+      setChatHistory(prev => [...prev, { role: "assistant", content: newAi }]);
+
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
-      setLoading(false);
+      if (!isFollowUp) setLoading(false);
+      else setFollowUpLoading(false);
     }
   }
-
+  
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     if (!q.trim()) return;
-    
-    setLoading(true);
-    setError("");
-    setAiSummary("");
-    setHits([]);
     setHasSearched(true);
-    setChatHistory([]); // Reset chatgeschiedenis
     setActiveTab("all"); // Reset tab naar 'Alle'
-
-    await performSearch(q, "all");
+    await performSearch(q, "all", [], false);
   }
 
   async function handleFollowUp(e: React.FormEvent) {
     e.preventDefault();
     if (!followUpQuery.trim() || followUpLoading) return;
-
-    setFollowUpLoading(true);
-    setError("");
 
     const userMsg: Message = { role: "user", content: followUpQuery };
     const updatedHistory = [...chatHistory, userMsg];
@@ -123,42 +121,14 @@ export default function Home() {
     const currentQuery = followUpQuery;
     setFollowUpQuery("");
 
-    try {
-      // Stuur de laatste 5 berichten mee als context
-      const historyParam = JSON.stringify(updatedHistory.slice(-5));
-      const params = new URLSearchParams({
-        q: currentQuery,
-        limit: '12',
-        history: historyParam,
-      });
-
-      // Filteren op categorie indien we in Nieuws of Financieel tab zitten
-      if (activeTab === "news") {
-        params.append("category", "news");
-      } else if (activeTab === "finance") {
-        params.append("category", "finance");
-      }
-
-      const res = await fetch(`/api/search?${params.toString()}`);
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.detail || "Follow-up failed");
-
-      setHits(data.results || []);
-      const newAi = data.ai || "";
-      setChatHistory(prev => [...prev, { role: "assistant", content: newAi }]);
-      setAiSummary(newAi);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
-    } finally {
-      setFollowUpLoading(false);
-    }
+    await performSearch(currentQuery, activeTab, updatedHistory, true);
   }
 
   async function handleTabClick(tab: "all" | "images" | "videos" | "news" | "finance") {
     setActiveTab(tab);
     if (q.trim()) {
-      await performSearch(q, tab);
+      // When changing tabs, perform a new search for the original query `q`
+      await performSearch(q, tab, [], false);
     }
   }
 
@@ -244,7 +214,7 @@ export default function Home() {
                 activeTab === "videos" ? "text-orange-500 border-orange-500 font-bold" : "border-transparent text-slate-500"
               }`}
             >
-              🎥 Video's
+              🎥 Video&apos;s
             </button>
             <button 
               onClick={() => handleTabClick("news")}
@@ -479,11 +449,12 @@ export default function Home() {
                     return (
                       <div key={hit.id || i} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all group flex flex-col">
                         <div className="relative aspect-video w-full overflow-hidden bg-slate-100 flex items-center justify-center">
-                          <img 
+                          <Image
                             src={imgSrc} 
                             alt={hit.title || "Afbeelding"}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            onError={(e) => {
+                            layout="fill"
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
                               const fallbackImages = [
                                 "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500&auto=format&fit=crop&q=60", // Tech
                                 "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&auto=format&fit=crop&q=60", // Business/Finance
@@ -530,7 +501,7 @@ export default function Home() {
               if (hits.length === 0) {
                 return (
                   <div className="text-center py-12 text-slate-500 bg-white rounded-3xl border border-slate-200 p-6 w-full">
-                    Geen video's gevonden voor deze zoekopdracht.
+                    Geen video&apos;s gevonden voor deze zoekopdracht.
                   </div>
                 );
               }
@@ -557,11 +528,12 @@ export default function Home() {
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center relative overflow-hidden">
-                              <img 
+                              <Image
                                 src={thumbSrc} 
                                 alt={hit.title || "Video thumbnail"}
-                                className="w-full h-full object-cover opacity-80"
-                                onError={(e) => {
+                                layout="fill"
+                                className="object-cover opacity-80"
+                                onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
                                   const fallbackVideoThumbnails = [
                                     "https://images.unsplash.com/photo-1536240478700-b869070f9279?w=600&auto=format&fit=crop&q=60", // Camera/Video production
                                     "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&auto=format&fit=crop&q=60", // Media lens
@@ -652,7 +624,7 @@ export default function Home() {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-slate-800 mb-1.5">Website Generator</h3>
-                <p className="text-slate-600 text-sm leading-relaxed">Genereer in een handomdraai complete, professionele HTML-websites op basis van een korte beschrijving.</p>
+                <p className="text-slate-600 text-sm leading-relaxed">Genereer in een handomdraai complete, professionele HTML-websites op basis van een korte beschrijving.&apos;</p>
               </div>
             </div>
 
@@ -667,7 +639,7 @@ export default function Home() {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-slate-800 mb-1.5">Neutraal & Onafhankelijk</h3>
-                <p className="text-slate-600 text-sm leading-relaxed">Een Europees alternatief dat onbevooroordeelde zoekresultaten levert zonder commerciële profilering.</p>
+                <p className="text-slate-600 text-sm leading-relaxed">Een Europees alternatief dat onbevooroordeelde zoekresultaten levert zonder commerciële profilering.&apos;</p>
               </div>
             </div>
           </div>

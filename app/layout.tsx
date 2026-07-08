@@ -16,11 +16,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "fajaedeseo AI",
   description: "fajaedeAI is een Europese zoekmachine die uw privacy respecteert en relevante resultaten levert.",
+  metadataBase: new URL("https://fajaede-search-frontend.vercel.app"),
   alternates: {
     canonical: "https://fajaede-search-frontend.vercel.app",
   },
   icons: {
-    icon: "/images/favicon.png",
+    icon: "/icon-48x48.png",
   },
   openGraph: {
     title: "fajaedeseo AI",
