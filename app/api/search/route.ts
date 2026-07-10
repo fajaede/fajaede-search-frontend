@@ -1,8 +1,7 @@
 // app/api/search/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 
-// Gebruik de API_URL uit de environment, met een fallback naar localhost voor dev.
-const BACKEND_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:18000').replace(/\/$/, "");
+const BACKEND_URL = "http://116.203.39.166:18000";
 
 /**
  * Deze functie fungeert als een robuuste proxy naar de FastAPI backend.
