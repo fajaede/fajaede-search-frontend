@@ -68,7 +68,9 @@ export default function Home() {
   ) => {
     if (!isFollowUp) {
       setLoading(true);
-      setChatHistory([]); // Reset chat for a new search
+      if (currentTab === "all") {
+        setChatHistory([]); // Reset chat only for a new All-tab search
+      }
     } else {
       setFollowUpLoading(true);
     }
@@ -87,12 +89,16 @@ export default function Home() {
 
       const data = await callSearchAPI(params);
 
+      // Update de resultaten (hits) altijd. Als er geen resultaten zijn, wordt het een lege array.
+      // Dit zorgt ervoor dat de UI altijd de meest actuele staat toont.
       setHits(data.results || []);
-      const newAi = data.ai || "";
 
-      // Add AI response to history. For new searches, this creates the initial message.
-      // For follow-ups, it adds the assistant's reply.
-      setChatHistory(prev => [...prev, { role: "assistant", content: newAi }]);
+      const newAi = currentTab === "all" ? (data.ai || "") : "";
+
+      // Alleen voor de All-tab laten we de AI-antwoordchat tonen.
+      if (newAi) {
+        setChatHistory(prev => [...prev, { role: "assistant", content: newAi }]);
+      }
 
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
@@ -127,8 +133,8 @@ export default function Home() {
   async function handleTabClick(tab: "all" | "images" | "videos" | "news" | "finance") {
     setActiveTab(tab);
     if (q.trim()) {
-      // When changing tabs, perform a new search for the original query `q`
-      await performSearch(q, tab, [], false);
+      // Voer een zoekopdracht uit voor de nieuwe tab, met behoud van de bestaande chatgeschiedenis.
+      await performSearch(q, tab, chatHistory, false);
     }
   }
 
@@ -444,16 +450,18 @@ export default function Home() {
               return (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full">
                   {hits.map((hit, i) => {
-                    const imgSrc = hit.image_url || `https://image.thum.io/get/width/400/crop/800/${hit.url}`;
+                    const imgSrc = hit.image_url || `https://image.thum.io/get/width/400/crop/800/${encodeURIComponent(hit.url || '')}`;
 
                     return (
                       <div key={hit.id || i} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all group flex flex-col">
-                        <div className="relative aspect-video w-full overflow-hidden bg-slate-100 flex items-center justify-center">
+                        <div className="relative aspect-video w-full overflow-hidden bg-slate-100">
                           <Image
-                            src={imgSrc} 
+                            src={imgSrc}
                             alt={hit.title || "Afbeelding"}
-                            layout="fill"
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            fill
+                            sizes="(max-width: 768px) 50vw, 33vw"
+                            unoptimized
+                            loading="lazy"
                             onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
                               const fallbackImages = [
                                 "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500&auto=format&fit=crop&q=60", // Tech
@@ -514,7 +522,7 @@ export default function Home() {
                       embedUrl = embedUrl.replace("watch?v=", "embed/");
                     }
 
-                    const thumbSrc = hit.image_url || `https://image.thum.io/get/width/400/crop/800/${hit.url}`;
+                    const thumbSrc = hit.image_url || `https://image.thum.io/get/width/400/crop/800/${encodeURIComponent(hit.url || '')}`;
 
                     return (
                       <div key={hit.id || i} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col">
@@ -529,10 +537,11 @@ export default function Home() {
                           ) : (
                             <div className="w-full h-full flex items-center justify-center relative overflow-hidden">
                               <Image
-                                src={thumbSrc} 
+                                src={thumbSrc}
                                 alt={hit.title || "Video thumbnail"}
-                                layout="fill"
-                                className="object-cover opacity-80"
+                                fill
+                                unoptimized
+                                loading="lazy"
                                 onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
                                   const fallbackVideoThumbnails = [
                                     "https://images.unsplash.com/photo-1536240478700-b869070f9279?w=600&auto=format&fit=crop&q=60", // Camera/Video production

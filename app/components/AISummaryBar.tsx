@@ -33,15 +33,26 @@ export default function AISummaryBar({ query }: AISummaryBarProps) {
             conversationId,
           }),
         });
-        const json = await res.json();
-        if (res.ok) {
+        // Verify the response is JSON before parsing
+        const contentType = res.headers.get("content-type") || "";
+        let json: any = null;
+        if (contentType.includes("application/json")) {
+          json = await res.json();
+        } else {
+          const text = await res.text();
+          console.error("AI summary returned non‑JSON response:", text);
+        }
+
+        if (res.ok && json) {
           setData(json);
           if (json.conversationId) {
             setConversationId(json.conversationId);
           }
-        } else {
+        } else if (json) {
           console.error("AI summary error:", json.error || json.message);
         }
+      } catch (err) {
+        console.error("AI summary fetch failed:", err);
       } finally {
         setLoading(false);
       }

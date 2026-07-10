@@ -1,24 +1,40 @@
 import type { NextConfig } from "next";
 
-// De API URL wordt nu uit de environment variabelen gehaald.
-// Voor lokaal gebruik wordt dit 'http://localhost:18000' uit .env.local.
-// In productie kun je de variabele instellen op je Hetzner IP.
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:18000';
-
+// Configuration for the Next.js application
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'image.thum.io',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      // Voeg hier eventuele andere domeinen toe die je voor afbeeldingen gebruikt.
+    ],
+  },
+
   async rewrites() {
+    // Voor lokale ontwikkeling, stuur API requests altijd door naar de lokale backend.
+    // Dit voorkomt conflicten met productie-omgevingsvariabelen.
     return [
-      // Specifieke rewrite voor de /search endpoint, die op de root van de API staat.
       {
         source: '/api/search',
-        destination: `${API_URL}/search`,
+        destination: 'http://localhost:18000/search',
       },
-      // Algemene rewrite voor andere /api/* endpoints zoals de website builder.
       {
+        // This will match any other path under /api/, like `/api/builder/generate`
         source: '/api/:path*',
-        destination: `${API_URL}/api/:path*`,
+        destination: 'http://localhost:18000/api/:path*',
       },
     ]
+  },
+
+  // Explicitly set the Turbopack root to silence warnings about multiple lockfiles.
+  turbopack: {
+    root: __dirname,
   },
 };
 

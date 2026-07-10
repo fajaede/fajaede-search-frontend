@@ -4,11 +4,19 @@
 import { useState } from 'react';
 import Link from 'next/link';
 
+type SiteBrief = {
+  target_audience?: string;
+  keywords?: string[];
+  core_value?: string;
+};
+
 type BuilderResponse = {
-  site_brief: any;
-  site_content: any;
+  site_brief: SiteBrief;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  site_content: Record<string, any>; // Keeping this as any for now as the structure is highly dynamic
   html: string;
-  validation_report: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  validation_report: Record<string, any>;
 };
 
 export default function BuilderPage() {
@@ -20,15 +28,15 @@ export default function BuilderPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<BuilderResponse | null>(null);
-  const [viewMode, setViewMode] = useState<'preview' | 'html'>('preview');
+  const [viewMode, setViewMode] = useState<'preview' | 'html' | 'brief'>('preview');
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent, endpoint: '/api/builder/generate' | '/api/builder/generate-medium') {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      const res = await fetch('/api/builder/generate', {
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -50,8 +58,12 @@ export default function BuilderPage() {
       }
 
       setResult(data as BuilderResponse);
-    } catch (err: any) {
-      setError(err?.message ?? 'Netwerkfout bij het verbinden met de builder service.');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Een onbekende fout is opgetreden.');
+      }
       setResult(null);
     } finally {
       setLoading(false);
@@ -116,13 +128,14 @@ export default function BuilderPage() {
               Website Details
             </h2>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            <form onSubmit={(e) => handleSubmit(e, '/api/builder/generate')} className="flex flex-col gap-5">
               {/* Site Type */}
               <div className="flex flex-col">
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                   Type Website
                 </label>
                 <select
+                  name="siteType"
                   value={siteType}
                   onChange={(e) => setSiteType(e.target.value)}
                   className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-slate-700 text-sm font-semibold transition-all cursor-pointer"
@@ -143,6 +156,7 @@ export default function BuilderPage() {
                 </label>
                 <input
                   type="text"
+                  name="industry"
                   value={industry}
                   onChange={(e) => setIndustry(e.target.value)}
                   placeholder="Bijv. IT Consultancy, Horeca, Transport"
@@ -158,6 +172,7 @@ export default function BuilderPage() {
                 </label>
                 <input
                   type="text"
+                  name="style"
                   value={style}
                   onChange={(e) => setStyle(e.target.value)}
                   placeholder="Bijv. modern, minimalistisch, warm, luxe"
@@ -172,6 +187,7 @@ export default function BuilderPage() {
                   Bedrijfsbeschrijving
                 </label>
                 <textarea
+                  name="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Beschrijf wat het bedrijf doet, hun belangrijkste diensten, locatie en unieke eigenschappen..."
@@ -194,30 +210,40 @@ export default function BuilderPage() {
               )}
 
               {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold py-3.5 px-6 rounded-full shadow-md hover:shadow-lg disabled:from-slate-400 disabled:to-slate-400 transition-all flex items-center justify-center gap-2 cursor-pointer text-sm md:text-base mt-2"
-              >
-                {loading ? (
-                  <>
-                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Genereren…
-                  </>
-                ) : (
-                  <>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 3v12" />
-                      <path d="m8 11 4 4 4-4" />
-                      <path d="M8 5H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4" />
-                    </svg>
-                    Genereer website
-                  </>
-                )}
-              </button>
+              <div className="flex flex-col gap-3 mt-2">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold py-3.5 px-6 rounded-full shadow-md hover:shadow-lg disabled:from-slate-400 disabled:to-slate-400 transition-all flex items-center justify-center gap-2 cursor-pointer text-sm md:text-base"
+                >
+                  {loading ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Genereren…
+                    </>
+                  ) : (
+                    <>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 3v12" />
+                        <path d="m8 11 4 4 4-4" />
+                        <path d="M8 5H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4" />
+                      </svg>
+                      Genereer Volledige Website (AI HTML)
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => handleSubmit(e, '/api/builder/generate-medium')}
+                  disabled={loading}
+                  className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-2.5 px-6 rounded-full shadow-sm disabled:bg-slate-400 transition-all flex items-center justify-center gap-2 cursor-pointer text-xs"
+                >
+                  Snel genereren (Template-based)
+                </button>
+              </div>
             </form>
           </div>
 
@@ -254,11 +280,21 @@ export default function BuilderPage() {
                 >
                   HTML Code
                 </button>
+                <button
+                  onClick={() => setViewMode('brief')}
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    viewMode === 'brief'
+                      ? 'bg-white text-slate-800 shadow-sm'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  Briefing
+                </button>
               </div>
             </div>
 
             {/* Browser Preview Window */}
-            <div className="w-full bg-slate-900 border border-slate-200/80 rounded-2xl overflow-hidden shadow-lg flex flex-col h-[75vh]">
+            <div className="w-full bg-slate-900 border border-slate-200/80 rounded-2xl overflow-hidden shadow-lg flex flex-col h-[75vh] min-h-[600px]">
               {/* Browser Header Bar */}
               <div className="bg-slate-100 border-b border-slate-200 px-4 py-3 flex items-center gap-4 flex-shrink-0">
                 {/* Traffic lights dots */}
@@ -305,6 +341,12 @@ export default function BuilderPage() {
                       /* Active Code View */
                       <pre className="w-full h-full bg-slate-950 text-slate-200 p-6 overflow-auto text-xs md:text-sm font-mono leading-relaxed select-text">
                         <code>{result.html}</code>
+                      </pre>
+                    )}
+                    {/* Active Briefing View */}
+                    {viewMode === 'brief' && (
+                      <pre className="w-full h-full bg-slate-50 text-slate-800 p-6 overflow-auto text-xs md:text-sm font-mono leading-relaxed select-text">
+                        <code>{JSON.stringify(result.site_brief, null, 2)}</code>
                       </pre>
                     )}
                   </>

@@ -1,9 +1,12 @@
 // app/api/ai/summary/route.ts
 import { NextRequest, NextResponse } from "next/server";
 
-const MEILI_HOST = process.env.MEILI_HOST!;
-const MEILI_SEARCH_KEY = process.env.MEILI_SEARCH_KEY!;
+// ---- REQUIRED ENVIRONMENT VARIABLES -------------------------------------------------
+const MEILI_HOST = process.env.MEILI_HOST;
+const MEILI_SEARCH_KEY = process.env.MEILI_SEARCH_KEY;
 const MEILI_INDEX = process.env.MEILI_INDEX || "pages";
+
+
 
 // Gebruik hier expliciet localhost, want we weten dat dat werkt
 const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434";
@@ -13,28 +16,55 @@ export async function POST(req: NextRequest) {
   try {
     const { q, limit = 5, conversationId } = await req.json();
 
+if (!MEILI_HOST || !MEILI_SEARCH_KEY) {
+  console.error("Missing required MEILI environment variables");
+  return NextResponse.json(
+    { error: "Server mis-configuration: MEILI_HOST / MEILI_SEARCH_KEY missing" },
+    { status: 500 }
+  );
+}
+
     if (!q || typeof q !== "string") {
       return NextResponse.json({ error: "Missing query" }, { status: 400 });
     }
 
-    // 1. Zoek in Meilisearch
-    const searchRes = await fetch(`${MEILI_HOST}/indexes/${MEILI_INDEX}/search`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${MEILI_SEARCH_KEY}`,
-      },
-      body: JSON.stringify({ q, limit }),
-      cache: "no-store",
-    });
+    // 1. Zoek in Meilisearch (with timeout & guard)
+    const disableMeili = process.env.MEILI_DISABLE_ON_BUILD === "true";
+    if (disableMeili) {
+      console.log("MEILI_DISABLE_ON_BUILD is true – skipping Meilisearch search for AI summary.");
+      return NextResponse.json({ error: "Meili disabled in build" }, { status: 503 });
+    }
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 s timeout
+    let searchRes: Response;
+    try {
+      searchRes = await fetch(`${MEILI_HOST}/indexes/${MEILI_INDEX}/search`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${MEILI_SEARCH_KEY}`,
+        },
+        body: JSON.stringify({ q, limit }),
+        signal: controller.signal,
+        cache: "no-store",
+      });
+    } catch (err) {
+      console.error("Meili request failed (network/timeout):", err);
+      return NextResponse.json({ error: "Meili request failed", message: String(err) }, { status: 502 });
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!searchRes.ok) {
       const text = await searchRes.text();
-      console.error("Meili error:", text);
-      return NextResponse.json(
-        { error: "Search failed", message: text },
-        { status: 500 },
-      );
+      console.error("Meili error (non‑200):", text);
+      return NextResponse.json({ error: "Search failed", message: text }, { status: 500 });
+    }
+    const contentType = searchRes.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+      const raw = await searchRes.text();
+      console.error("Meili returned non‑JSON response:", raw);
+      return NextResponse.json({ error: "Meili response not JSON", raw }, { status: 502 });
     }
 
     const searchData = await searchRes.json();
@@ -79,30 +109,42 @@ Maak nu:
 2) Sluit af met één duidelijke vervolgvraag in het Nederlands.
 `.trim();
 
-    // 2. Call naar Ollama
-    const llmRes = await fetch(`${OLLAMA_URL}/api/chat`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: OLLAMA_MODEL,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        stream: false,
-      }),
-    });
+    // 2. Call naar Ollama with network error handling
+    let llmRes: Response;
+    try {
+      llmRes = await fetch(`${OLLAMA_URL}/api/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: OLLAMA_MODEL,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          stream: false,
+        }),
+      });
+    } catch (err) {
+      console.error("LLM request failed (network):", err);
+      return NextResponse.json({ error: "LLM request failed", message: String(err) }, { status: 500 });
+    }
 
     if (!llmRes.ok) {
       const text = await llmRes.text();
       console.error("LLM error:", text);
-      return NextResponse.json(
-        { error: "LLM request failed", message: text },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "LLM request failed", message: text }, { status: 500 });
     }
 
-    const llmJson = await llmRes.json();
+    // Verify content type before parsing JSON
+    const llmContentType = llmRes.headers.get("content-type") || "";
+    let llmJson: any;
+    if (llmContentType.includes("application/json")) {
+      llmJson = await llmRes.json();
+    } else {
+      const text = await llmRes.text();
+      console.error("LLM returned non‑JSON response:", text);
+      return NextResponse.json({ error: "LLM response not JSON", raw: text }, { status: 502 });
+    }
 
     // Ollama chat-response: message.content bevat de tekst
     const fullText: string =

@@ -25,8 +25,6 @@ export default function SearchBox() {
     if (!q.trim()) return;
     setLoading(true);
     setError("");
-    setAiSummary(""); // Wis de vorige samenvatting bij een nieuwe zoekopdracht
-    setHits([]); // Wis ook de vorige resultaten voor een schone start
 
     try {
       // De Python API verwacht een GET request met query parameters
