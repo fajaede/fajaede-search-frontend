@@ -19,8 +19,11 @@ const nextConfig: NextConfig = {
   async rewrites() {
     // Bepaal de API URL. Voor productie gebruiken we de omgevingsvariabele,
     // voor lokale ontwikkeling een vaste fallback naar localhost.
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:18000';
-
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    const backendUrl = isDevelopment
+      ? 'http://localhost:18000'
+      : process.env.NEXT_PUBLIC_API_URL;
+      
     return [
       {
         source: '/api/search',

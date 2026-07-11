@@ -26,7 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   // If the flag is set, skip the dynamic Meilisearch request (useful during Vercel builds)
-  const disableMeili = process.env.MEILI_DISABLE_ON_BUILD === "true";
+  const disableMeili = process.env.VERCEL_ENV === "production" || process.env.MEILI_DISABLE_ON_BUILD === "true";
   if (disableMeili) {
     console.log("MEILI_DISABLE_ON_BUILD is true – skipping Meilisearch sitemap generation.");
     return staticRoutes;
