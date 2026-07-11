@@ -17,17 +17,21 @@ const nextConfig: NextConfig = {
   },
 
   async rewrites() {
-    // Voor lokale ontwikkeling, stuur API requests altijd door naar de lokale backend.
-    // Dit voorkomt conflicten met productie-omgevingsvariabelen.
+    // Bepaal de API URL. Voor productie gebruiken we de omgevingsvariabele,
+    // voor lokale ontwikkeling een vaste fallback naar localhost.
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:18000';
+
     return [
       {
         source: '/api/search',
-        destination: 'http://localhost:18000/search',
+        // Stuurt /api/search door naar de /search endpoint van de backend.
+        destination: `${backendUrl}/search`,
       },
       {
         // This will match any other path under /api/, like `/api/builder/generate`
         source: '/api/:path*',
-        destination: 'http://localhost:18000/api/:path*',
+        // Stuurt alle andere /api/* verzoeken door naar de corresponderende backend paden.
+        destination: `${backendUrl}/api/:path*`,
       },
     ]
   },

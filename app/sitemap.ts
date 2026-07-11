@@ -1,8 +1,8 @@
 import type { MetadataRoute } from "next";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = "https://fajaede-search-frontend.vercel.app";
-
+  // Gebruik de officiële domeinnaam uit de environment variables, met een fallback.
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://fajaede.eu";
   // Static routes always included
   const staticRoutes: MetadataRoute.Sitemap = [
     {
@@ -77,4 +77,3 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [...staticRoutes, ...dynamicUrls];
 }
-
