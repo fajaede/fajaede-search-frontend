@@ -39,6 +39,7 @@ const nextConfig: NextConfig = {
     ]
   },
 
+  // Forceer een nieuwe build door dit commentaar toe te voegen.
   // Explicitly set the Turbopack root to silence warnings about multiple lockfiles.
   turbopack: {
     root: __dirname,
