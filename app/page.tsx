@@ -59,9 +59,6 @@ export default function Home() {
   ) => {
     if (!isFollowUp) {
       setLoading(true);
-      if (currentTab === "all") {
-        setChatHistory([]); // Reset chat only for a new All-tab search
-      }
     } else {
       setFollowUpLoading(true);
     }
@@ -110,9 +107,9 @@ export default function Home() {
           const errorMessage = err.detail || "Sorry, de AI-samenvatting kon op dit moment niet worden geladen.";
           setChatHistory(prev => [
             ...prev.filter(msg => msg.content !== "fajaedeAI+ is aan het denken..."),
-            {
-              role: "assistant",
-              content: errorMessage
+            { 
+              role: "assistant", 
+              content: errorMessage 
             }
           ]);
         });
