@@ -61,7 +61,7 @@ export default function CookiePolicy() {
         4. Tijdelijke sessiegegevens
       </h2>
       <p>
-        Wij maken uitsluitend gebruik van tijdelijke variabelen in het werkgeheugen (React state) om uw actieve zoekopdracht en de geselecteerde tabbladen (zoals Nieuws, Afbeeldingen of Video's) tijdens uw bezoek te onthouden. Zodra u de website of het browsertabblad sluit, worden deze gegevens direct en definitief gewist. Er wordt niks opgeslagen op uw harde schijf.
+        Wij maken uitsluitend gebruik van tijdelijke variabelen in het werkgeheugen (React state) om uw actieve zoekopdracht en de geselecteerde tabbladen (zoals Nieuws, Afbeeldingen of Video&apos;s) tijdens uw bezoek te onthouden. Zodra u de website of het browsertabblad sluit, worden deze gegevens direct en definitief gewist. Er wordt niks opgeslagen op uw harde schijf.
       </p>
 
       <h2 style={{ fontSize: 24, marginTop: 40, color: "#1e293b", borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>

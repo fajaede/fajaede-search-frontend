@@ -50,15 +50,6 @@ export default function Home() {
   }, [chatHistory, followUpLoading]);
 
   // Unified API call function
-  const callSearchAPI = async (params: URLSearchParams) => {
-    const res = await fetch(`/api/search?${params.toString()}`);
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.detail || "An unknown error occurred during the search.");
-    }
-    return data;
-  };
-
   // Unified search function supporting tabs, history, and loading states
   const performSearch = async (
     searchQuery: string,
@@ -87,19 +78,46 @@ export default function Home() {
         params.append("history", JSON.stringify(historyList.slice(-5)));
       }
 
-      const data = await callSearchAPI(params);
+      // Maak twee parallelle verzoeken: één voor de snelle zoekresultaten en één voor de AI-samenvatting.
+      const searchPromise = fetch(`/api/search?${params.toString()}`).then(res => {
+        if (!res.ok) return res.json().then(err => Promise.reject(err));
+        return res.json();
+      });
 
-      // Update de resultaten (hits) altijd. Als er geen resultaten zijn, wordt het een lege array.
-      // Dit zorgt ervoor dat de UI altijd de meest actuele staat toont.
-      setHits(data.results || []);
+      const aiPromise = currentTab === "all" ? fetch(`/api/summarize?${params.toString()}`).then(res => {
+        if (!res.ok) return res.json().then(err => Promise.reject(err));
+        return res.json();
+      }) : Promise.resolve({ ai: "" }); // Geen AI-verzoek voor andere tabs
 
-      const newAi = currentTab === "all" ? (data.ai || "") : "";
+      // Wacht op de zoekresultaten (dit is meestal snel)
+      const searchData = await searchPromise;
+      setHits(searchData.results || []);
 
-      // Alleen voor de All-tab laten we de AI-antwoordchat tonen.
-      if (newAi) {
-        setChatHistory(prev => [...prev, { role: "assistant", content: newAi }]);
+      // Wacht op het AI-antwoord (dit kan langer duren)
+      // en update de chat alleen als het antwoord binnenkomt.
+      if (currentTab === "all") {
+        aiPromise.then(aiData => {
+          // Vervang de "denk"-placeholder met het echte antwoord
+          if (aiData && aiData.ai) {
+            setChatHistory(prev => [
+              ...prev.filter(msg => msg.content !== "fajaedeAI+ is aan het denken..."),
+              { role: "assistant", content: aiData.ai }
+            ]);
+          }
+        }).catch(err => {
+          console.error("AI summary failed:", err);
+          // Vervang de "denk"-placeholder met een duidelijke foutmelding
+          const errorMessage = err.detail || "Sorry, de AI-samenvatting kon op dit moment niet worden geladen.";
+          setChatHistory(prev => [
+            ...prev.filter(msg => msg.content !== "fajaedeAI+ is aan het denken..."),
+            {
+              role: "assistant",
+              content: errorMessage
+            }
+          ]);
+        });
       }
-
+      
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
@@ -112,7 +130,13 @@ export default function Home() {
     e.preventDefault();
     if (!q.trim()) return;
     setHasSearched(true);
-    setActiveTab("all"); // Reset tab naar 'Alle'
+    setActiveTab("all"); // Reset naar 'Alle' tab bij nieuwe zoekopdracht
+    // Toon direct een laadbericht voor de AI
+    setChatHistory(prev => {
+      // Voorkom dubbele laadberichten
+      if (prev.some(msg => msg.content === "fajaedeAI+ is aan het denken...")) return prev;
+      return [{ role: "assistant", content: "fajaedeAI+ is aan het denken..." }];
+    });
     await performSearch(q, "all", [], false);
   }
 
@@ -271,6 +295,10 @@ export default function Home() {
                           msg.role === "user" 
                             ? "bg-slate-800 text-white rounded-tr-none" 
                             : "bg-white rounded-tl-none"
+                        } ${
+                          msg.content === "fajaedeAI+ is aan het denken..."
+                            ? "text-slate-500 italic animate-pulse"
+                            : ""
                         }`}
                       >
                         {msg.content}
@@ -633,7 +661,7 @@ export default function Home() {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-slate-800 mb-1.5">Website Generator</h3>
-                <p className="text-slate-600 text-sm leading-relaxed">Genereer in een handomdraai complete, professionele HTML-websites op basis van een korte beschrijving.&apos;</p>
+                <p className="text-slate-600 text-sm leading-relaxed">Genereer in een handomdraai complete, professionele HTML-websites op basis van een korte beschrijving.</p>
               </div>
             </div>
 
@@ -648,7 +676,7 @@ export default function Home() {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-slate-800 mb-1.5">Neutraal & Onafhankelijk</h3>
-                <p className="text-slate-600 text-sm leading-relaxed">Een Europees alternatief dat onbevooroordeelde zoekresultaten levert zonder commerciële profilering.&apos;</p>
+                <p className="text-slate-600 text-sm leading-relaxed">Een Europees alternatief dat onbevooroordeelde zoekresultaten levert zonder commerciële profilering.</p>
               </div>
             </div>
           </div>
