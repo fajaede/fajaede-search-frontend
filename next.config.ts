@@ -26,15 +26,10 @@ const nextConfig: NextConfig = {
       
     return [
       {
-        source: '/api/search',
-        // Stuurt /api/search door naar de /api/search endpoint van de backend.
-        destination: `${backendUrl}/api/search`,
-      },
-      {
         // This will match any other path under /api/, like `/api/builder/generate`
         source: '/api/:path*',
         // Stuurt alle andere /api/* verzoeken door naar de corresponderende backend paden.
-        destination: `${backendUrl}/api/:path*`, // Dit was al correct.
+        destination: `${backendUrl}/api/:path*`,
       },
     ]
   },
