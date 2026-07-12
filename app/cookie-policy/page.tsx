@@ -23,13 +23,13 @@ export default function CookiePolicy() {
       </p>
 
       <h2 style={{ fontSize: 24, marginTop: 40, color: "#1e293b", borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
-        1. 100% Cookie-vrij
+        1. Ons Cookie-vrije Uitgangspunt
       </h2>
       <p>
-        Bij fajaedeAI+ geloven we in een internet zonder tracking, profilering en onnodige inbreuk op uw privacy. Daarom is onze zoekmachine **volledig cookie-vrij**. 
+        Bij fajaedeAI+ geloven we in een internet zonder tracking en onnodige inbreuk op uw privacy. Onze zoekfunctionaliteit is daarom **volledig vrij van tracking-cookies**.
       </p>
       <p>
-        Wanneer u onze website bezoekt of gebruikt, worden er **geen cookies** op uw computer, telefoon of tablet geplaatst.
+        Wij gebruiken één functioneel item in de lokale opslag van uw browser (`localStorage`) met als enig doel uw cookie-voorkeur te onthouden. Dit item bevat geen persoonlijke informatie en wordt niet gebruikt om u te volgen.
       </p>
 
       <h2 style={{ fontSize: 24, marginTop: 40, color: "#1e293b", borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
@@ -51,10 +51,10 @@ export default function CookiePolicy() {
       </p>
 
       <h2 style={{ fontSize: 24, marginTop: 40, color: "#1e293b", borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
-        3. Geen cookies van derden (Third-Party Cookies)
+        3. Geen Tracking- of Advertentiecookies
       </h2>
       <p>
-        Omdat wij geen gebruik maken van advertentienetwerken van derden of externe analytische diensten (zoals Google Analytics of Facebook-pixels), kunnen derden via onze website ook geen cookies op uw apparaat plaatsen.
+        Wij maken geen gebruik van advertentienetwerken of externe analytische diensten (zoals Google Analytics). Hierdoor worden er via onze website geen tracking-cookies van derden op uw apparaat geplaatst.
       </p>
 
       <h2 style={{ fontSize: 24, marginTop: 40, color: "#1e293b", borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
