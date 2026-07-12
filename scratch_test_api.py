@@ -1,12 +1,22 @@
+"""Een eenvoudig script om de /search API endpoint te testen.
+
+Dit script voert een reeks vooraf gedefinieerde zoekopdrachten uit en drukt
+statistieken af over de ontvangen resultaten, zoals het totale aantal,
+en het aantal resultaten met afbeeldingen of video's.
+"""
+
 import urllib.request
 import urllib.parse
 import json
+import os
 
+API_BASE_URL = os.getenv("API_URL", "http://127.0.0.1:18000")
 queries = ["europa", "nieuws", "geld", "fajaede.nl", "rotterdam"]
+
 for q in queries:
     print(f"=== Query: {q} ===")
     try:
-        url = "http://116.203.39.166:18000/search?" + urllib.parse.urlencode({"q": q, "limit": 50})
+        url = f"{API_BASE_URL}/search?" + urllib.parse.urlencode({"q": q, "limit": 50})
         req = urllib.request.Request(url)
         with urllib.request.urlopen(req) as response:
             if response.status == 200:
@@ -23,5 +33,6 @@ for q in queries:
                     print("First video:", videos[0]["video_url"])
             else:
                 print(f"Error {response.status}")
-    except Exception as e:
-        print(f"Failed: {e}")
+    # Vang specifieke fouten af voor betere foutafhandeling.
+    except (urllib.error.URLError, json.JSONDecodeError) as e:
+        print(f"Request failed for query '{q}': {e}")

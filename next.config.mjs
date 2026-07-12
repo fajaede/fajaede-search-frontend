@@ -1,17 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Voeg de 'rewrites' configuratie toe voor de ontwikkelingsserver
+  // Asynchrone rewrites om API-verzoeken te proxyen.
+  // Dit zorgt ervoor dat de frontend (op poort 3000) kan communiceren
+  // met de backend (op poort 18000) zonder CORS-problemen.
   async rewrites() {
+    // Bepaal de doel-URL voor de API.
+    // Gebruik de omgevingsvariabele API_URL als deze is ingesteld,
+    // anders val terug op de lokale ontwikkelserver.
+    const apiUrl = process.env.API_URL || 'http://127.0.0.1:18000';
+
     return [
       {
-        // Stuur alle verzoeken die beginnen met /api/ door naar de FastAPI backend
         source: '/api/:path*',
-        // De standaard URL voor de FastAPI backend
-        destination: `${
-          process.env.NEXT_PUBLIC_API_URL || 'http://116.203.39.166:18000'
-        }/:path*`,
+        destination: `${apiUrl}/api/:path*`,
       },
-    ]
+    ];
   },
 };
 
