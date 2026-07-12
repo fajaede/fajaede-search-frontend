@@ -29,7 +29,7 @@ const nextConfig: NextConfig = {
         // This will match any other path under /api/, like `/api/builder/generate`
         source: '/api/:path*',
         // Stuurt alle /api/* verzoeken door naar de backend.
-        destination: `${backendUrl}/:path*`,
+        destination: `${backendUrl}/api/:path*`,
       },
     ]
   },

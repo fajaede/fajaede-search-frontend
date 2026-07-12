@@ -26,34 +26,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   // If the flag is set, skip the dynamic Meilisearch request (useful during Vercel builds)
-  const disableMeili = process.env.VERCEL_ENV === "production" || process.env.MEILI_DISABLE_ON_BUILD === "true";
+  const disableMeili = process.env.MEILI_DISABLE_ON_BUILD === "true";
   if (disableMeili) {
     console.log("MEILI_DISABLE_ON_BUILD is true – skipping Meilisearch sitemap generation.");
     return staticRoutes;
   }
 
-  // Haal configuratie veilig op vanaf de server (nooit zichtbaar in browser)
-  const MEILI_HOST = process.env.MEILI_HOST || "http://127.0.0.1:7700";
-  // Gebruik altijd de publieke search key voor de frontend. De master key hoort hier niet.
-  const MEILI_KEY = process.env.MEILI_SEARCH_KEY || "";
-  const MEILI_INDEX = process.env.MEILI_INDEX || "pages";
+  // Gebruik de API URL voor sitemap generatie, met fallback voor lokaal.
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:18000";
 
   let dynamicUrls: MetadataRoute.Sitemap = [];
   try {
-    // Haal de top URLs op uit je 'pages' index in Meilisearch
-    const res = await fetch(`${MEILI_HOST}/indexes/${MEILI_INDEX}/search`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${MEILI_KEY}`,
-      },
-      body: JSON.stringify({ q: "", limit: 1000, attributesToRetrieve: ["url", "published_at"] }),
-      next: { revalidate: 3600 }, // Cache dit resultaat voor 1 uur
+    // Roep de API aan om de sitemap data te krijgen. Dit is veiliger en
+    // consistenter dan direct met Meilisearch te praten vanuit de frontend build.
+    // We gebruiken de /api/search endpoint als een proxy hiervoor met een lege query.
+    const searchParams = new URLSearchParams({
+      q: "",
+      limit: "1000",
+    });
+    const res = await fetch(`${apiUrl}/api/search?${searchParams.toString()}`, {
+      method: "GET", // Search endpoint is GET
+      next: { revalidate: 3600 }, // Cache dit resultaat voor 1 uur (Vercel)
     });
 
     if (res.ok) {
       const data = await res.json();
-      dynamicUrls = data.hits.map((hit: { url: string; published_at?: string }) => {
+      // De API retourneert 'results', niet 'hits'
+      dynamicUrls = data.results.map((hit: { url: string; published_at?: string }) => {
         let lastMod = new Date();
         if (hit.published_at) {
           const parsed = new Date(hit.published_at);
@@ -69,10 +68,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         };
       });
     } else {
-      console.error("Kon dynamische sitemap niet laden van Meilisearch:", await res.text());
+      console.error("Kon dynamische sitemap niet laden via API:", await res.text());
     }
   } catch (error) {
-    console.error("Fout bij verbinden met Meilisearch in sitemap:", error);
+    console.error("Fout bij het aanroepen van de API in sitemap.ts:", error);
   }
 
   return [...staticRoutes, ...dynamicUrls];
