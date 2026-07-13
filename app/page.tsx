@@ -116,7 +116,15 @@ export default function Home() {
       }
       
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      // Verbeterde foutafhandeling om backend-details te tonen
+      let errorMessage = "An unknown error occurred.";
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === 'object' && err !== null && 'detail' in err) {
+        // Vang FastAPI's HTTPException { "detail": "..." } af
+        errorMessage = (err as { detail: string }).detail;
+      }
+      setError(errorMessage);
     } finally {
       if (!isFollowUp) setLoading(false);
       else setFollowUpLoading(false);
